@@ -4,17 +4,56 @@ class EditorUGTriggerFile : EditorFileType
     override void Export(EditorSaveData data, string file, ExportSettings settings, eDialogExtraSetting dialog_setting)
     {
         UGTriggersExportRoot root = new UGTriggersExportRoot();
+
+        // Get live objects from the editor
+        Editor editor = GetEditor();
+        if (!editor) {
+            GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(GetGame().GetUIManager().CloseDialog, 100);
+            return;
+        }
+
+        EditorObjectMap allObjects = editor.GetPlacedObjects();
+        if (!allObjects) {
+            JsonFileLoader<UGTriggersExportRoot>.JsonSaveFile(file, root);
+            return;
+        }
+
         foreach (EditorObjectData obj_data : data.EditorObjects)
         {
-            UGTriggerObject ug = UGTriggerObject.Cast(obj_data.WorldObject);
+            // Check if this is a UG trigger object by type
+            if (!obj_data || obj_data.Type != "UGTriggerObject") continue;
+
+            // Find the corresponding live object in the editor by position matching
+            UGTriggerObject ug = null;
+
+            foreach (int id, EditorObject placed_obj : allObjects) {
+                if (!placed_obj || !placed_obj.GetWorldObject()) continue;
+
+                // Use distance check for position matching (more reliable than exact equality)
+                vector objPos = placed_obj.GetPosition();
+                if (vector.Distance(objPos, obj_data.Position) < 0.1) {
+                    Object worldObj = placed_obj.GetWorldObject();
+                    if (worldObj && worldObj.IsKindOf("UGTriggerObject")) {
+                        ug = UGTriggerObject.Cast(worldObj);
+                        if (ug) break;
+                    }
+                }
+            }
+
             if (!ug) continue;
 
             vector pos    = obj_data.Position;
             vector orient = obj_data.Orientation;
-            vector size   = ug.GetSize();
+            vector size   = Vector(10, 10, 10);  // Default size
+            float acc     = 1.0;
+            float interp  = 1.0;
 
-            float acc    = UG_Round2(ug.GetEyeAccommodation());
-            float interp = UG_Round2(ug.GetInterpolation());
+            // Safely get values with null checks
+            if (ug) {
+                size = ug.GetSize();
+                acc = UG_Round2(ug.GetEyeAccommodation());
+                interp = UG_Round2(ug.GetInterpolation());
+            }
 
             UndergroundTrigger trig = ug.GetLinkedTrigger();
 
