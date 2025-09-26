@@ -20,69 +20,119 @@ class UGTriggerObject : Building
 
 	void SetUGType(int type)
 	{
-		type = Math.Clamp(type, 0, 2);
+		// Validate input type
+		if (!UGTriggerValidator.IsValidTriggerType(type))
+		{
+			UGTriggerErrorHandler.HandleValidationError("trigger type", type.ToString(), "0-2");
+			type = eUGTriggerType.OUTER; // Default to safe value
+		}
+
 		m_DesiredUGType = type;
 
 		UndergroundTrigger trig = GetLinkedTrigger();
-		if (!trig) return;
+		if (!trig)
+		{
+			UGTriggerErrorHandler.LogError("System", "No linked trigger found for SetUGType");
+			return;
+		}
 
-		// Apply default EyeAccommodation 
-		if (type == 0)       SetEyeAccommodation(1.0); // Outer
-		else /* 1 or 2 */    SetEyeAccommodation(0.0); // Inner/Transitional
+		// Apply recommended accommodation for this type
+		float recommendedAcc = UGTriggerValidator.GetRecommendedAccommodation(type);
+		SetEyeAccommodation(recommendedAcc);
 
-		// Only Transitional supports breadcrumbs —
-		if (type != 2 && trig.m_Data)
+		// Clear breadcrumbs if type doesn't support them
+		if (!UGTriggerValidator.SupportsBreadcrumbs(type) && trig.m_Data)
 		{
 			trig.m_Data.Breadcrumbs = null;
 		}
 		trig.m_Type = type;
+
+		UGTriggerErrorHandler.LogInfo("System",
+			string.Format("Trigger type set to %1", UGTriggerValidator.GetTriggerTypeName(type)));
 	}
 
 	void SetEyeAccommodation(float v)
 	{
-		v = UG_Round2(v);
-		UndergroundTrigger trig = GetLinkedTrigger();
-		if (trig)
+		// Validate and clamp accommodation value
+		if (!UGTriggerValidator.IsValidEyeAccommodation(v))
 		{
-			trig.m_Accommodation = v;
-			if (m_DesiredUGType == 2)
-				trig.m_Type = EUndergroundTriggerType.TRANSITIONING;
+			UGTriggerErrorHandler.HandleValidationError("eye accommodation", v.ToString(), "0.0-1.0");
 		}
+		v = UGTriggerValidator.ClampEyeAccommodation(UG_Round2(v));
+
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (!trig)
+		{
+			UGTriggerErrorHandler.LogError("System", "No linked trigger found for SetEyeAccommodation");
+			return;
+		}
+
+		trig.m_Accommodation = v;
+		if (m_DesiredUGType == eUGTriggerType.TRANSITIONAL)
+			trig.m_Type = EUndergroundTriggerType.TRANSITIONING;
 	}
 
 	float GetEyeAccommodation()
 	{
 		UndergroundTrigger trig = GetLinkedTrigger();
 		if (trig) return trig.m_Accommodation;
-		return 1.0; 
+		return UGTriggerSettings.GetDefaultOuterAccommodation();
 	}
 
 	void SetInterpolation(float v)
 	{
-		v = Math.Clamp(v, 0.0, 1.0);
+		// Validate and clamp interpolation speed
+		if (!UGTriggerValidator.IsValidInterpolationSpeed(v))
+		{
+			UGTriggerErrorHandler.HandleValidationError("interpolation speed", v.ToString(), "0.0-1.0");
+		}
+		v = UGTriggerValidator.ClampInterpolationSpeed(v);
+
 		UndergroundTrigger trig = GetLinkedTrigger();
-		if (trig) { trig.m_InterpolationSpeed = v; }
+		if (!trig)
+		{
+			UGTriggerErrorHandler.LogError("System", "No linked trigger found for SetInterpolation");
+			return;
+		}
+
+		trig.m_InterpolationSpeed = v;
 	}
 
 	float GetInterpolation()
 	{
 		UndergroundTrigger trig = GetLinkedTrigger();
 		if (trig) return trig.m_InterpolationSpeed;
-		return 1.0;
+		return UGTriggerSettings.GetDefaultInterpolation();
 	}
 
 	void UGTriggerObject()
+	{
+		InitializeDefaultSettings();
+		InitializeSyncTimer();
+	}
+
+	/**
+	 * @brief Initialize trigger with default settings
+	 */
+	protected void InitializeDefaultSettings()
 	{
 		m_Size = Vector(1,1,1);
 		ApplySizeTransform();
 
 		CreateTriggerIfMissing();
-		UpdateTrigger(); 
+		UpdateTrigger();
 
 		m_LastPosePos = GetPosition();
    		m_LastPoseOri = GetOrientation();
+	}
+
+	/**
+	 * @brief Initialize the synchronization timer
+	 */
+	protected void InitializeSyncTimer()
+	{
 		m_SyncTimer = new Timer(CALL_CATEGORY_SYSTEM);
-		m_SyncTimer.Run(0.05, this, "UpdateTriggerPoseOnly", null, true);
+		m_SyncTimer.Run(UGTriggerSettings.GetSyncTimerInterval(), this, "UpdateTriggerPoseOnly", null, true);
 	}
 
 	void ~UGTriggerObject()
@@ -94,11 +144,15 @@ class UGTriggerObject : Building
 
 	void SetSize(vector sizeMeters)
 	{
-		vector s = sizeMeters;
-		if (s[0] <= 0.001) s[0] = 0.001;
-		if (s[1] <= 0.001) s[1] = 0.001;
-		if (s[2] <= 0.001) s[2] = 0.001;
-		m_Size = s;
+		// Validate and sanitize size
+		if (!UGTriggerValidator.IsValidTriggerSize(sizeMeters))
+		{
+			string sizeStr = string.Format("(%1, %2, %3)", sizeMeters[0], sizeMeters[1], sizeMeters[2]);
+			string minStr = string.Format(">= %1 for all axes", UGTriggerSettings.GetMinDimension());
+			UGTriggerErrorHandler.HandleValidationError("trigger size", sizeStr, minStr);
+		}
+
+		m_Size = UGTriggerValidator.SanitizeTriggerSize(sizeMeters);
 		ApplySizeTransform();
 		UpdateTrigger();
 		QueueCrumbRescan();
@@ -106,11 +160,12 @@ class UGTriggerObject : Building
 
 	void TrigSize(float dx, float dy, float dz)
 	{
-		m_Size[0] = Math.Max(m_Size[0] + dx, 0.01);
-		m_Size[1] = Math.Max(m_Size[1] + dy, 0.01);
-		m_Size[2] = Math.Max(m_Size[2] + dz, 0.01);
+		float minDim = UGTriggerSettings.GetMinDimension();
+		m_Size[0] = Math.Max(m_Size[0] + dx, minDim);
+		m_Size[1] = Math.Max(m_Size[1] + dy, minDim);
+		m_Size[2] = Math.Max(m_Size[2] + dz, minDim);
 		ApplySizeTransform();
-		UpdateTrigger(); 
+		UpdateTrigger();
 		QueueCrumbRescan();
 	}
 
@@ -129,16 +184,17 @@ class UGTriggerObject : Building
 	{
 		if (m_UndergroundTrigger) return;
 
-		m_UndergroundTrigger = UndergroundTrigger.Cast(GetGame().CreateObjectEx("UndergroundTrigger", GetPosition(), ECE_LOCAL));
+		DayZGame game = UGEditorGameCache.GetCachedGame();
+		m_UndergroundTrigger = UndergroundTrigger.Cast(game.CreateObjectEx("UndergroundTrigger", GetPosition(), ECE_LOCAL));
 		if (!m_UndergroundTrigger)
 		{
-			Print("[UGTriggerObject] Failed to spawn UndergroundTrigger");
+			UGTriggerErrorHandler.HandleSystemError("UndergroundTrigger", "Failed to spawn trigger object");
 			return;
 		}
 
-
-		m_UndergroundTrigger.m_Accommodation      = 1.0; 
-		m_UndergroundTrigger.m_InterpolationSpeed = 1.0;
+		// Initialize with default settings
+		m_UndergroundTrigger.m_Accommodation      = UGTriggerSettings.GetDefaultOuterAccommodation();
+		m_UndergroundTrigger.m_InterpolationSpeed = UGTriggerSettings.GetDefaultInterpolation();
 		m_UndergroundTrigger.m_Type               = EUndergroundTriggerType.OUTER;
 		m_DesiredUGType = -1;
 		m_UndergroundTrigger.SetPosition(GetPosition());

@@ -40,7 +40,7 @@ class UGUndoCache
 			s.Eye    = ug.GetEyeAccommodation();
 			s.Interp = ug.GetInterpolation();
 			s.IsBC   = 0;
-			s.ExpireAt = GetGame().GetTime() * 0.001 + ttl;
+			s.ExpireAt = UGEditorGameCache.GetCachedTime() + ttl;
 			s_Snaps.Insert(s);
 			return;
 		}
@@ -56,7 +56,7 @@ class UGUndoCache
 			s2.BC_Eye = bc.GetEyeAccommodation();
 			s2.BC_Ray = bc.GetUseRaycast();
 			s2.BC_Rad = bc.GetRadius();
-			s2.ExpireAt = GetGame().GetTime() * 0.001 + ttl;
+			s2.ExpireAt = UGEditorGameCache.GetCachedTime() + ttl;
 			s_Snaps.Insert(s2);
 		}
 	}
@@ -65,7 +65,7 @@ class UGUndoCache
 	{
 		if (!editor || s_Snaps.Count() == 0) return;
 
-		float now = GetGame().GetTime() * 0.001;
+		float now = UGEditorGameCache.GetCachedTime();
 
 		// Purge expired
 		for (int i = s_Snaps.Count() - 1; i >= 0; i--) {
@@ -100,7 +100,7 @@ class UGUndoCache
 				bc.SetEyeAccommodation(s.BC_Eye);
 				bc.SetUseRaycast(s.BC_Ray);
 				bc.SetRadius(s.BC_Rad);
-				UG_RescanTriggersAround(s.Pos, 200.0);
+				UG_RescanTriggersAround(s.Pos, UGTriggerSettings.GetBreadcrumbScanRadius());
 				s_Snaps.Remove(j);
 				continue;
 			}

@@ -1,5 +1,3 @@
-static const float UG_STEP = 1;
-
 modded class Editor
 {
     override void ProcessInput(float dt, Input input)
@@ -88,12 +86,13 @@ modded class Editor
                 UGTriggerObject trig = UGTriggerObject.Cast(sw);
                 if (!trig) continue;
 
-                if (input_api.GetInputByName("UGTRIG_IncLength").LocalPress())  trig.TrigSize(UG_STEP, 0, 0);
-                if (input_api.GetInputByName("UGTRIG_DecLength").LocalPress())  trig.TrigSize(-UG_STEP, 0, 0);
-                if (input_api.GetInputByName("UGTRIG_IncWidth").LocalPress())   trig.TrigSize(0, 0, UG_STEP);
-                if (input_api.GetInputByName("UGTRIG_DecWidth").LocalPress())   trig.TrigSize(0, 0, -UG_STEP);
-                if (input_api.GetInputByName("UGTRIG_IncHeight").LocalPress())  trig.TrigSize(0, UG_STEP, 0);
-                if (input_api.GetInputByName("UGTRIG_DecHeight").LocalPress())  trig.TrigSize(0, -UG_STEP, 0);
+                float stepSize = UGTriggerSettings.GetStepSize();
+                if (input_api.GetInputByName("UGTRIG_IncLength").LocalPress())  trig.TrigSize(stepSize, 0, 0);
+                if (input_api.GetInputByName("UGTRIG_DecLength").LocalPress())  trig.TrigSize(-stepSize, 0, 0);
+                if (input_api.GetInputByName("UGTRIG_IncWidth").LocalPress())   trig.TrigSize(0, 0, stepSize);
+                if (input_api.GetInputByName("UGTRIG_DecWidth").LocalPress())   trig.TrigSize(0, 0, -stepSize);
+                if (input_api.GetInputByName("UGTRIG_IncHeight").LocalPress())  trig.TrigSize(0, stepSize, 0);
+                if (input_api.GetInputByName("UGTRIG_DecHeight").LocalPress())  trig.TrigSize(0, -stepSize, 0);
             }
         }
 
