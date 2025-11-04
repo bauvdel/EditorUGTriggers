@@ -7,6 +7,13 @@ class UGTriggerObject : Building
 	protected vector m_LastPosePos;
 	protected vector m_LastPoseOri;
 	protected int m_DesiredUGType = -1;
+
+	// New property storage
+	protected bool m_UseLinePointFade = false;
+	protected string m_AmbientSoundType = "";
+	#ifdef DAYZ_1_29
+	protected string m_AmbientSoundSet = "";
+	#endif
 	
 	// ----- Type (0=Outer, 1=Inner, 2=Transitional) -----
 	int GetUGType()
@@ -105,6 +112,91 @@ class UGTriggerObject : Building
 		return UGTriggerSettings.GetDefaultInterpolation();
 	}
 
+	// UseLinePointFade property
+	void SetUseLinePointFade(bool value)
+	{
+		m_UseLinePointFade = value;
+
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig)
+		{
+			if (!trig.m_Data)
+				trig.m_Data = new JsonUndergroundAreaTriggerData();
+			trig.m_Data.UseLinePointFade = value;
+		}
+
+		UGTriggerErrorHandler.LogInfo("System", string.Format("UseLinePointFade set to %1", value));
+	}
+
+	bool GetUseLinePointFade()
+	{
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig && trig.m_Data)
+			return trig.m_Data.UseLinePointFade;
+		return m_UseLinePointFade;
+	}
+
+	// AmbientSoundType property
+	void SetAmbientSoundType(string soundType)
+	{
+		if (!UGTriggerValidator.IsValidAmbientSoundType(soundType))
+		{
+			UGTriggerErrorHandler.HandleValidationError("ambient sound type", soundType, "valid sound controller name (see GetAmbientSoundTypeOptions)");
+			soundType = "";
+		}
+
+		m_AmbientSoundType = soundType;
+
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig)
+		{
+			if (!trig.m_Data)
+				trig.m_Data = new JsonUndergroundAreaTriggerData();
+			trig.m_Data.AmbientSoundType = soundType;
+			Print(string.Format("[UGTriggers] SetAmbientSoundType - Set m_Data.AmbientSoundType to '%1'", soundType));
+		}
+		else
+		{
+			Print("[UGTriggers] SetAmbientSoundType - No linked trigger found!");
+		}
+
+		UGTriggerErrorHandler.LogInfo("System", string.Format("AmbientSoundType set to '%1'", soundType));
+	}
+
+	string GetAmbientSoundType()
+	{
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig && trig.m_Data)
+			return trig.m_Data.AmbientSoundType;
+		return m_AmbientSoundType;
+	}
+
+	// AmbientSoundSet property (DayZ 1.29+ only)
+	#ifdef DAYZ_1_29
+	void SetAmbientSoundSet(string soundSet)
+	{
+		m_AmbientSoundSet = soundSet;
+
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig)
+		{
+			if (!trig.m_Data)
+				trig.m_Data = new JsonUndergroundAreaTriggerData();
+			trig.m_Data.AmbientSoundSet = soundSet;
+		}
+
+		UGTriggerErrorHandler.LogInfo("System", string.Format("AmbientSoundSet set to '%1'", soundSet));
+	}
+
+	string GetAmbientSoundSet()
+	{
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig && trig.m_Data)
+			return trig.m_Data.AmbientSoundSet;
+		return m_AmbientSoundSet;
+	}
+	#endif
+
 	void UGTriggerObject()
 	{
 		InitializeDefaultSettings();
@@ -118,6 +210,13 @@ class UGTriggerObject : Building
 	{
 		m_Size = Vector(1,1,1);
 		ApplySizeTransform();
+
+		// Initialize new properties with defaults
+		m_UseLinePointFade = UGTriggerSettings.GetDefaultUseLinePointFade();
+		m_AmbientSoundType = "";
+		#ifdef DAYZ_1_29
+		m_AmbientSoundSet = "";
+		#endif
 
 		CreateTriggerIfMissing();
 		UpdateTrigger();
@@ -180,9 +279,37 @@ class UGTriggerObject : Building
 	vector GetSize() { return m_Size; }
 	UndergroundTrigger GetLinkedTrigger() { return m_UndergroundTrigger; }
 
+	// Ensure m_Data and Breadcrumbs array are initialized to prevent null pointer exceptions
+	protected void EnsureDataInitialized(UndergroundTrigger trig)
+	{
+		if (!trig)
+			return;
+
+		// Create m_Data if it doesn't exist
+		if (!trig.m_Data)
+		{
+			trig.m_Data = new JsonUndergroundAreaTriggerData();
+			Print("[UGTriggers] EnsureDataInitialized - Created new m_Data");
+		}
+
+		// Always ensure Breadcrumbs array exists to prevent null pointer in UndergroundHandlerClient
+		if (!trig.m_Data.Breadcrumbs)
+		{
+			trig.m_Data.Breadcrumbs = new array<ref JsonUndergroundAreaBreadcrumb>();
+			Print("[UGTriggers] EnsureDataInitialized - Created empty Breadcrumbs array");
+		}
+	}
+
 	protected void CreateTriggerIfMissing()
 	{
-		if (m_UndergroundTrigger) return;
+		if (m_UndergroundTrigger)
+		{
+			// If trigger already exists, ensure m_Data and Breadcrumbs are initialized
+			EnsureDataInitialized(m_UndergroundTrigger);
+			// Then sync local properties FROM m_Data
+			LoadPropertiesFromData();
+			return;
+		}
 
 		DayZGame game = UGEditorGameCache.GetCachedGame();
 		m_UndergroundTrigger = UndergroundTrigger.Cast(game.CreateObjectEx("UndergroundTrigger", GetPosition(), ECE_LOCAL));
@@ -199,6 +326,25 @@ class UGTriggerObject : Building
 		m_DesiredUGType = -1;
 		m_UndergroundTrigger.SetPosition(GetPosition());
 		m_UndergroundTrigger.SetOrientation(GetOrientation());
+
+		// Ensure m_Data and Breadcrumbs are initialized for new trigger
+		EnsureDataInitialized(m_UndergroundTrigger);
+	}
+
+	// Load properties from m_UndergroundTrigger.m_Data into local storage
+	protected void LoadPropertiesFromData()
+	{
+		if (!m_UndergroundTrigger || !m_UndergroundTrigger.m_Data)
+			return;
+
+		m_UseLinePointFade = m_UndergroundTrigger.m_Data.UseLinePointFade;
+		m_AmbientSoundType = m_UndergroundTrigger.m_Data.AmbientSoundType;
+		#ifdef DAYZ_1_29
+		m_AmbientSoundSet = m_UndergroundTrigger.m_Data.AmbientSoundSet;
+		UGTriggerErrorHandler.LogInfo("System", string.Format("Loaded from m_Data - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
+		#else
+		UGTriggerErrorHandler.LogInfo("System", string.Format("Loaded from m_Data - UseLinePointFade:%1, SoundType:'%2'", m_UseLinePointFade, m_AmbientSoundType));
+		#endif
 	}
 
 	protected bool IsPointInsideOBB(vector p, out vector right, out vector up, out vector fwd, out vector pos, out vector half)
@@ -405,6 +551,31 @@ class UGTriggerObject : Building
 		CreateTriggerIfMissing();
 		UpdateTriggerPoseOnly();
 		UpdateTriggerExtentsOnly();
+		UpdateTriggerData();
+	}
+
+	// Sync ambient sound properties to m_UndergroundTrigger.m_Data for live playback
+	protected void UpdateTriggerData()
+	{
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (!trig)
+		{
+			UGTriggerErrorHandler.LogError("System", "No linked trigger found for UpdateTriggerData");
+			return;
+		}
+
+		// Ensure m_Data and Breadcrumbs are initialized
+		EnsureDataInitialized(trig);
+
+		// Sync ambient sound properties from local storage to m_Data
+		trig.m_Data.UseLinePointFade = m_UseLinePointFade;
+		trig.m_Data.AmbientSoundType = m_AmbientSoundType;
+		#ifdef DAYZ_1_29
+		trig.m_Data.AmbientSoundSet = m_AmbientSoundSet;
+		Print(string.Format("[UGTriggers] UpdateTriggerData - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
+		#else
+		Print(string.Format("[UGTriggers] UpdateTriggerData - UseLinePointFade:%1, SoundType:'%2'", m_UseLinePointFade, m_AmbientSoundType));
+		#endif
 	}
 
 	protected void ApplySizeTransform()
@@ -448,7 +619,12 @@ class UGTriggerApplyRec
     vector Size;
     float  EyeAcc;
     float  Interp;
-    int    Type;  
+    int    Type;
+    bool   UseLinePointFade;
+    string AmbientSoundType;
+    #ifdef DAYZ_1_29
+    string AmbientSoundSet;
+    #endif
 }
 
 class UGBreadcrumbApplyRec
@@ -457,6 +633,7 @@ class UGBreadcrumbApplyRec
     float  EyeAcc;
     int    UseRaycast;
     float  Radius;
+    bool   LightLerp;
 }
 
 ref array<ref UGTriggerApplyRec>     g_UG_ToApply = new array<ref UGTriggerApplyRec>();
@@ -485,6 +662,11 @@ class UG_PostImportApplier
             ug.SetSize(rec.Size);
             ug.SetEyeAccommodation(rec.EyeAcc);
             ug.SetInterpolation(rec.Interp);
+            ug.SetUseLinePointFade(rec.UseLinePointFade);
+            ug.SetAmbientSoundType(rec.AmbientSoundType);
+            #ifdef DAYZ_1_29
+            ug.SetAmbientSoundSet(rec.AmbientSoundSet);
+            #endif
 
             if (rec.Type == 2) ug.QueueCrumbRescan();
 
@@ -500,6 +682,7 @@ class UG_PostImportApplier
             obj.SetEyeAccommodation(bc.EyeAcc);
             obj.SetUseRaycast(bc.UseRaycast);
             obj.SetRadius(bc.Radius);
+            obj.SetLightLerp(bc.LightLerp);
 
             g_BC_ToApply.Remove(j);
         }

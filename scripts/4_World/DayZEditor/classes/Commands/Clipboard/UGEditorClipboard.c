@@ -98,7 +98,7 @@ class UGClipboard
 		return n;
 	}
 
-	static int Paste(Editor editor, int pasteMode = 1, vector offsetPerIndex = "0 0 0", ref array<EditorObject> created_out = null)
+	static int Paste(Editor editor, int pasteMode = 1, vector offsetPerIndex = "0 0 0", out array<EditorObject> created_out = null)
 	{
 		if (s_Buffer.Count() == 0) {
 			return 0;
@@ -122,7 +122,7 @@ class UGClipboard
 		return SpawnFromBuffer(editor, anchor, pasteMode == 1, offsetPerIndex, created_out);
 	}
 
-	static int PasteAt(Editor editor, vector anchor, vector offsetPerIndex = "0 0 0", ref array<EditorObject> created_out = null)
+	static int PasteAt(Editor editor, vector anchor, vector offsetPerIndex = "0 0 0", out array<EditorObject> created_out = null)
 	{
 		if (s_Buffer.Count() == 0) {
 			return 0;
@@ -192,7 +192,7 @@ class UGClipboard
 		return r;
 	}
 
-	protected static int SpawnFromBuffer(Editor editor, vector anchor, bool relativeToCenter, vector offsetPerIndex, ref array<EditorObject> created_out)
+	protected static int SpawnFromBuffer(Editor editor, vector anchor, bool relativeToCenter, vector offsetPerIndex, out array<EditorObject> created_out)
 	{
 		ref array<ref EditorObjectData> write_data = new array<ref EditorObjectData>();
 

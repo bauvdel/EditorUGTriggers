@@ -14,7 +14,12 @@ class UGEditorGameCache
 
     protected void UGEditorGameCache()
     {
-        InvalidateCache();
+        // Initialize cache flags to false - cache starts empty
+        m_GameCached = false;
+        m_UIManagerCached = false;
+        m_GUICallQueueCached = false;
+        m_SystemCallQueueCached = false;
+        m_EditorCached = false;
     }
 
     static UGEditorGameCache GetInstance()
@@ -101,18 +106,20 @@ class UGEditorGameCache
 
     static void InvalidateCache()
     {
-        UGEditorGameCache cache = GetInstance();
-        cache.m_Game = null;
-        cache.m_UIManager = null;
-        cache.m_GUICallQueue = null;
-        cache.m_SystemCallQueue = null;
-        cache.m_Editor = null;
+        if (!s_Instance)
+            return;
 
-        cache.m_GameCached = false;
-        cache.m_UIManagerCached = false;
-        cache.m_GUICallQueueCached = false;
-        cache.m_SystemCallQueueCached = false;
-        cache.m_EditorCached = false;
+        s_Instance.m_Game = null;
+        s_Instance.m_UIManager = null;
+        s_Instance.m_GUICallQueue = null;
+        s_Instance.m_SystemCallQueue = null;
+        s_Instance.m_Editor = null;
+
+        s_Instance.m_GameCached = false;
+        s_Instance.m_UIManagerCached = false;
+        s_Instance.m_GUICallQueueCached = false;
+        s_Instance.m_SystemCallQueueCached = false;
+        s_Instance.m_EditorCached = false;
     }
 
     static bool IsCacheValid()

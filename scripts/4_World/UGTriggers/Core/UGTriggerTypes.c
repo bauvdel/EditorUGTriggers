@@ -5,6 +5,35 @@ enum eUGTriggerType
     TRANSITIONAL = 2   // Transitional trigger - supports breadcrumbs
 }
 
+// Ambient sound types for underground triggers
+// Based on P:\scripts\3_Game\Sound.c line 34 - All available sound controllers
+enum eUGAmbientSoundType
+{
+    NONE = 0,              // No ambient sound
+    RAIN = 1,              // Rain sound controller
+    NIGHT = 2,             // Night sound controller
+    MEADOW = 3,            // Meadow sound controller
+    TREES = 4,             // Trees sound controller
+    HILLS = 5,             // Hills sound controller
+    HOUSES = 6,            // Houses sound controller
+    WINDY = 7,             // Windy sound controller
+    DEAD_BODY = 8,         // Dead body sound controller
+    SEA = 9,               // Sea sound controller
+    FOREST = 10,           // Forest sound controller
+    ALTITUDE_GROUND = 11,  // Altitude ground sound controller
+    ALTITUDE_SEA = 12,     // Altitude sea sound controller
+    ALTITUDE_SURFACE = 13, // Altitude surface sound controller
+    DAYTIME = 14,          // Daytime sound controller
+    SHOOTING = 15,         // Shooting sound controller
+    COAST = 16,            // Coast sound controller
+    WATER_DEPTH = 17,      // Water depth sound controller
+    OVERCAST = 18,         // Overcast sound controller
+    FOG = 19,              // Fog sound controller
+    SNOWFALL = 20,         // Snowfall sound controller
+    CAVE_SMALL = 21,       // Small cave ambient sound
+    CAVE_BIG = 22          // Big cave ambient sound
+}
+
 // Export operation results
 enum eUGTriggerExportResult
 {
@@ -128,5 +157,208 @@ class UGTriggerValidator
                                           float interpolation, vector position)
     {
         return IsValidTriggerType(type) && IsValidTriggerSize(size) && IsValidEyeAccommodation(accommodation) && IsValidInterpolationSpeed(interpolation) && IsValidPosition(position);
+    }
+
+    // Convert ambient sound type enum to string for export
+    static string GetAmbientSoundTypeString(int soundType)
+    {
+        switch (soundType)
+        {
+            case eUGAmbientSoundType.NONE: return "";
+            case eUGAmbientSoundType.RAIN: return "rain";
+            case eUGAmbientSoundType.NIGHT: return "night";
+            case eUGAmbientSoundType.MEADOW: return "meadow";
+            case eUGAmbientSoundType.TREES: return "trees";
+            case eUGAmbientSoundType.HILLS: return "hills";
+            case eUGAmbientSoundType.HOUSES: return "houses";
+            case eUGAmbientSoundType.WINDY: return "windy";
+            case eUGAmbientSoundType.DEAD_BODY: return "deadBody";
+            case eUGAmbientSoundType.SEA: return "sea";
+            case eUGAmbientSoundType.FOREST: return "forest";
+            case eUGAmbientSoundType.ALTITUDE_GROUND: return "altitudeGround";
+            case eUGAmbientSoundType.ALTITUDE_SEA: return "altitudeSea";
+            case eUGAmbientSoundType.ALTITUDE_SURFACE: return "altitudeSurface";
+            case eUGAmbientSoundType.DAYTIME: return "daytime";
+            case eUGAmbientSoundType.SHOOTING: return "shooting";
+            case eUGAmbientSoundType.COAST: return "coast";
+            case eUGAmbientSoundType.WATER_DEPTH: return "waterDepth";
+            case eUGAmbientSoundType.OVERCAST: return "overcast";
+            case eUGAmbientSoundType.FOG: return "fog";
+            case eUGAmbientSoundType.SNOWFALL: return "snowfall";
+            case eUGAmbientSoundType.CAVE_SMALL: return "caveSmall";
+            case eUGAmbientSoundType.CAVE_BIG: return "caveBig";
+            default: return "";
+        }
+        return "";
+    }
+
+    // Convert ambient sound string to enum for import
+    static int GetAmbientSoundTypeFromString(string soundTypeStr)
+    {
+        if (soundTypeStr == "rain") return eUGAmbientSoundType.RAIN;
+        else if (soundTypeStr == "night") return eUGAmbientSoundType.NIGHT;
+        else if (soundTypeStr == "meadow") return eUGAmbientSoundType.MEADOW;
+        else if (soundTypeStr == "trees") return eUGAmbientSoundType.TREES;
+        else if (soundTypeStr == "hills") return eUGAmbientSoundType.HILLS;
+        else if (soundTypeStr == "houses") return eUGAmbientSoundType.HOUSES;
+        else if (soundTypeStr == "windy") return eUGAmbientSoundType.WINDY;
+        else if (soundTypeStr == "deadBody") return eUGAmbientSoundType.DEAD_BODY;
+        else if (soundTypeStr == "sea") return eUGAmbientSoundType.SEA;
+        else if (soundTypeStr == "forest") return eUGAmbientSoundType.FOREST;
+        else if (soundTypeStr == "altitudeGround") return eUGAmbientSoundType.ALTITUDE_GROUND;
+        else if (soundTypeStr == "altitudeSea") return eUGAmbientSoundType.ALTITUDE_SEA;
+        else if (soundTypeStr == "altitudeSurface") return eUGAmbientSoundType.ALTITUDE_SURFACE;
+        else if (soundTypeStr == "daytime") return eUGAmbientSoundType.DAYTIME;
+        else if (soundTypeStr == "shooting") return eUGAmbientSoundType.SHOOTING;
+        else if (soundTypeStr == "coast") return eUGAmbientSoundType.COAST;
+        else if (soundTypeStr == "waterDepth") return eUGAmbientSoundType.WATER_DEPTH;
+        else if (soundTypeStr == "overcast") return eUGAmbientSoundType.OVERCAST;
+        else if (soundTypeStr == "fog") return eUGAmbientSoundType.FOG;
+        else if (soundTypeStr == "snowfall") return eUGAmbientSoundType.SNOWFALL;
+        else if (soundTypeStr == "caveSmall") return eUGAmbientSoundType.CAVE_SMALL;
+        else if (soundTypeStr == "caveBig") return eUGAmbientSoundType.CAVE_BIG;
+        else return eUGAmbientSoundType.NONE;
+        return eUGAmbientSoundType.NONE;
+    }
+
+    // Validate ambient sound type string
+    static bool IsValidAmbientSoundType(string soundTypeStr)
+    {
+        if (soundTypeStr == "") return true;
+        if (soundTypeStr == "rain") return true;
+        if (soundTypeStr == "night") return true;
+        if (soundTypeStr == "meadow") return true;
+        if (soundTypeStr == "trees") return true;
+        if (soundTypeStr == "hills") return true;
+        if (soundTypeStr == "houses") return true;
+        if (soundTypeStr == "windy") return true;
+        if (soundTypeStr == "deadBody") return true;
+        if (soundTypeStr == "sea") return true;
+        if (soundTypeStr == "forest") return true;
+        if (soundTypeStr == "altitudeGround") return true;
+        if (soundTypeStr == "altitudeSea") return true;
+        if (soundTypeStr == "altitudeSurface") return true;
+        if (soundTypeStr == "daytime") return true;
+        if (soundTypeStr == "shooting") return true;
+        if (soundTypeStr == "coast") return true;
+        if (soundTypeStr == "waterDepth") return true;
+        if (soundTypeStr == "overcast") return true;
+        if (soundTypeStr == "fog") return true;
+        if (soundTypeStr == "snowfall") return true;
+        if (soundTypeStr == "caveSmall") return true;
+        if (soundTypeStr == "caveBig") return true;
+        return false;
+    }
+
+    // Get available ambient sound type options for UI dropdowns
+    static void GetAmbientSoundTypeOptions(out array<string> options, out array<int> values)
+    {
+        if (!options) options = new array<string>();
+        if (!values) values = new array<int>();
+
+        options.Clear();
+        values.Clear();
+
+        options.Insert("None");
+        values.Insert(eUGAmbientSoundType.NONE);
+
+        options.Insert("Rain");
+        values.Insert(eUGAmbientSoundType.RAIN);
+
+        options.Insert("Night");
+        values.Insert(eUGAmbientSoundType.NIGHT);
+
+        options.Insert("Meadow");
+        values.Insert(eUGAmbientSoundType.MEADOW);
+
+        options.Insert("Trees");
+        values.Insert(eUGAmbientSoundType.TREES);
+
+        options.Insert("Hills");
+        values.Insert(eUGAmbientSoundType.HILLS);
+
+        options.Insert("Houses");
+        values.Insert(eUGAmbientSoundType.HOUSES);
+
+        options.Insert("Windy");
+        values.Insert(eUGAmbientSoundType.WINDY);
+
+        options.Insert("Dead Body");
+        values.Insert(eUGAmbientSoundType.DEAD_BODY);
+
+        options.Insert("Sea");
+        values.Insert(eUGAmbientSoundType.SEA);
+
+        options.Insert("Forest");
+        values.Insert(eUGAmbientSoundType.FOREST);
+
+        options.Insert("Altitude Ground");
+        values.Insert(eUGAmbientSoundType.ALTITUDE_GROUND);
+
+        options.Insert("Altitude Sea");
+        values.Insert(eUGAmbientSoundType.ALTITUDE_SEA);
+
+        options.Insert("Altitude Surface");
+        values.Insert(eUGAmbientSoundType.ALTITUDE_SURFACE);
+
+        options.Insert("Daytime");
+        values.Insert(eUGAmbientSoundType.DAYTIME);
+
+        options.Insert("Shooting");
+        values.Insert(eUGAmbientSoundType.SHOOTING);
+
+        options.Insert("Coast");
+        values.Insert(eUGAmbientSoundType.COAST);
+
+        options.Insert("Water Depth");
+        values.Insert(eUGAmbientSoundType.WATER_DEPTH);
+
+        options.Insert("Overcast");
+        values.Insert(eUGAmbientSoundType.OVERCAST);
+
+        options.Insert("Fog");
+        values.Insert(eUGAmbientSoundType.FOG);
+
+        options.Insert("Snowfall");
+        values.Insert(eUGAmbientSoundType.SNOWFALL);
+
+        options.Insert("Cave Small");
+        values.Insert(eUGAmbientSoundType.CAVE_SMALL);
+
+        options.Insert("Cave Big");
+        values.Insert(eUGAmbientSoundType.CAVE_BIG);
+    }
+
+    // Get display name for ambient sound type
+    static string GetAmbientSoundTypeDisplayName(int soundType)
+    {
+        switch (soundType)
+        {
+            case eUGAmbientSoundType.NONE: return "None";
+            case eUGAmbientSoundType.RAIN: return "Rain";
+            case eUGAmbientSoundType.NIGHT: return "Night";
+            case eUGAmbientSoundType.MEADOW: return "Meadow";
+            case eUGAmbientSoundType.TREES: return "Trees";
+            case eUGAmbientSoundType.HILLS: return "Hills";
+            case eUGAmbientSoundType.HOUSES: return "Houses";
+            case eUGAmbientSoundType.WINDY: return "Windy";
+            case eUGAmbientSoundType.DEAD_BODY: return "Dead Body";
+            case eUGAmbientSoundType.SEA: return "Sea";
+            case eUGAmbientSoundType.FOREST: return "Forest";
+            case eUGAmbientSoundType.ALTITUDE_GROUND: return "Altitude Ground";
+            case eUGAmbientSoundType.ALTITUDE_SEA: return "Altitude Sea";
+            case eUGAmbientSoundType.ALTITUDE_SURFACE: return "Altitude Surface";
+            case eUGAmbientSoundType.DAYTIME: return "Daytime";
+            case eUGAmbientSoundType.SHOOTING: return "Shooting";
+            case eUGAmbientSoundType.COAST: return "Coast";
+            case eUGAmbientSoundType.WATER_DEPTH: return "Water Depth";
+            case eUGAmbientSoundType.OVERCAST: return "Overcast";
+            case eUGAmbientSoundType.FOG: return "Fog";
+            case eUGAmbientSoundType.SNOWFALL: return "Snowfall";
+            case eUGAmbientSoundType.CAVE_SMALL: return "Cave Small";
+            case eUGAmbientSoundType.CAVE_BIG: return "Cave Big";
+            default: return "Unknown";
+        }
+        return "Unknown";
     }
 }

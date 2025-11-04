@@ -54,7 +54,31 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 
 			ug_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
 			ug_group.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.01, 0.0, 1.0));
+
+			DropdownListPrefab<int> line_fade_dropdown = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
+			line_fade_dropdown["False"] = 0;
+			line_fade_dropdown["True"] = 1;
+			ug_group.Insert(line_fade_dropdown);
+
 			AddContent(ug_group);
+
+			// Separate group for ambient sound - gives dropdown more vertical space
+			GroupPrefab ug_sound_group = new GroupPrefab("Ambient Sound", this, string.Empty);
+
+			DropdownListPrefab<int> sound_type_dropdown = new DropdownListPrefab<int>("Sound Type", m_UGController, "UG_AmbientSoundType");
+			array<string> soundOptions = new array<string>();
+			array<int> soundValues = new array<int>();
+			UGTriggerValidator.GetAmbientSoundTypeOptions(soundOptions, soundValues);
+			for (int i = 0; i < soundOptions.Count(); i++) {
+				sound_type_dropdown[soundOptions[i]] = soundValues[i];
+			}
+			ug_sound_group.Insert(sound_type_dropdown);
+
+			#ifdef DAYZ_1_29
+			ug_sound_group.Insert(new EditBoxPrefab("Sound Set", m_UGController, "UG_AmbientSoundSet"));
+			#endif
+
+			AddContent(ug_sound_group);
 		}
 
 		//Build UGBreadcrumb GroupPrefab
@@ -71,6 +95,11 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			bc_group.Insert(bc_raycast);
 
 			bc_group.Insert(new EditBoxNumberPrefab("Radius", m_BCController, "BC_Radius", 0.1, -1.0, 1000.0));
+
+			DropdownListPrefab<int> bc_lightlerp = new DropdownListPrefab<int>("Light Lerp", m_BCController, "BC_LightLerp");
+			bc_lightlerp["False"] = 0;
+			bc_lightlerp["True"] = 1;
+			bc_group.Insert(bc_lightlerp);
 
 			AddContent(bc_group);
 		}
@@ -112,6 +141,11 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 		float firstAcc = 1.0;
 			float firstInterp = 1.0;
 			int   firstType = 0;
+			int   firstUseLinePointFade = 0;
+			int   firstAmbientSoundType = 0;
+			#ifdef DAYZ_1_29
+			string firstAmbientSoundSet = "";
+			#endif
 
 			foreach (EditorObject eo2 : editor_objects) {
 				UGTriggerObject ug = UGTriggerObject.Cast(eo2.GetWorldObject());
@@ -121,6 +155,14 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 					firstAcc    = ug.GetEyeAccommodation();
 					firstInterp = ug.GetInterpolation();
 					firstType   = ug.GetUGType();
+					if (ug.GetUseLinePointFade())
+						firstUseLinePointFade = 1;
+					else
+						firstUseLinePointFade = 0;
+					firstAmbientSoundType = UGTriggerValidator.GetAmbientSoundTypeFromString(ug.GetAmbientSoundType());
+					#ifdef DAYZ_1_29
+					firstAmbientSoundSet = ug.GetAmbientSoundSet();
+					#endif
 					seeded = true;
 				}
 			}
@@ -135,6 +177,11 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				m_UGController.UG_Interpolation = firstInterp;
 				m_UGController.UG_Type = firstType;
 				m_UGController.UG_LastType = firstType;
+				m_UGController.UG_UseLinePointFade = firstUseLinePointFade;
+				m_UGController.UG_AmbientSoundType = firstAmbientSoundType;
+				#ifdef DAYZ_1_29
+				m_UGController.UG_AmbientSoundSet = firstAmbientSoundSet;
+				#endif
 
 				GroupPrefab ug_group_multi = new GroupPrefab("Underground Trigger (Selection)", this, string.Empty);
 				ug_group_multi.Insert(new VectorPrefab("Size (X,Y,Z)", m_UGController, "UG_SizeVec"));
@@ -147,9 +194,32 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 
 				ug_group_multi.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
 				ug_group_multi.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.01, 0.0, 1.0));
+
+				DropdownListPrefab<int> line_fade_dropdown_multi = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
+				line_fade_dropdown_multi["False"] = 0;
+				line_fade_dropdown_multi["True"] = 1;
+				ug_group_multi.Insert(line_fade_dropdown_multi);
+
+				AddContent(ug_group_multi);
+
+				// Separate group for ambient sound - gives dropdown more vertical space
+				GroupPrefab ug_sound_group_multi = new GroupPrefab("Ambient Sound (Selection)", this, string.Empty);
+
+				DropdownListPrefab<int> sound_type_dropdown_multi = new DropdownListPrefab<int>("Sound Type", m_UGController, "UG_AmbientSoundType");
+				array<string> soundOptionsMulti = new array<string>();
+				array<int> soundValuesMulti = new array<int>();
+				UGTriggerValidator.GetAmbientSoundTypeOptions(soundOptionsMulti, soundValuesMulti);
+				for (int j = 0; j < soundOptionsMulti.Count(); j++) {
+					sound_type_dropdown_multi[soundOptionsMulti[j]] = soundValuesMulti[j];
+				}
+				ug_sound_group_multi.Insert(sound_type_dropdown_multi);
+
+				#ifdef DAYZ_1_29
+				ug_sound_group_multi.Insert(new EditBoxPrefab("Sound Set", m_UGController, "UG_AmbientSoundSet"));
+				#endif
+
+				AddContent(ug_sound_group_multi);
 			}
-			//ug_group_multi.Insert(new ButtonPrefab("Apply to Selection", this, "UG_ApplyToSelection"));
-			AddContent(ug_group_multi);
 			return;
 		}
 
@@ -168,6 +238,10 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", m_BCController, "BC_UseRaycast");
 			bc_raycast["No"] = 0; bc_raycast["Yes"] = 1; bc_group.Insert(bc_raycast);
 			bc_group.Insert(new EditBoxNumberPrefab("Radius", m_BCController, "BC_Radius", 0.1, -1.0, 10000.0));
+			DropdownListPrefab<int> bc_lightlerp_multi = new DropdownListPrefab<int>("Light Lerp", m_BCController, "BC_LightLerp");
+			bc_lightlerp_multi["False"] = 0;
+			bc_lightlerp_multi["True"] = 1;
+			bc_group.Insert(bc_lightlerp_multi);
 			//bc_group.Insert(new ButtonPrefab("Apply to Selection", this, "BC_ApplyToSelection"));
 			AddContent(bc_group);
 			return;

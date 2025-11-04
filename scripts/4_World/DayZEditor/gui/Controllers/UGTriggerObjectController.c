@@ -7,6 +7,11 @@ class UGTriggerObjectController: Managed
 	float UG_Interpolation = 1.0;
 	int UG_Type = 0;
 	int UG_LastType = -1;
+	int UG_UseLinePointFade = 0;
+	int UG_AmbientSoundType = 0;
+	#ifdef DAYZ_1_29
+	string UG_AmbientSoundSet = "";
+	#endif
 
 	void UGTriggerObjectController(UGTriggerObject ug_object)
 	{
@@ -18,6 +23,14 @@ class UGTriggerObjectController: Managed
 		UG_Interpolation = ug_object.GetInterpolation();
 		UG_Type = ug_object.GetUGType();
 		UG_LastType = UG_Type;
+		if (ug_object.GetUseLinePointFade())
+			UG_UseLinePointFade = 1;
+		else
+			UG_UseLinePointFade = 0;
+		UG_AmbientSoundType = UGTriggerValidator.GetAmbientSoundTypeFromString(ug_object.GetAmbientSoundType());
+		#ifdef DAYZ_1_29
+		UG_AmbientSoundSet = ug_object.GetAmbientSoundSet();
+		#endif
 	}
 
 	void PropertyChanged(string property_name)
@@ -69,6 +82,27 @@ class UGTriggerObjectController: Managed
 				}
 				break;
 			}
+
+			case "UG_UseLinePointFade": {
+				m_UGTriggerObject.SetUseLinePointFade(UG_UseLinePointFade != 0);
+				m_UGTriggerObject.Update();
+				break;
+			}
+
+			case "UG_AmbientSoundType": {
+				string soundTypeStr = UGTriggerValidator.GetAmbientSoundTypeString(UG_AmbientSoundType);
+				m_UGTriggerObject.SetAmbientSoundType(soundTypeStr);
+				m_UGTriggerObject.Update();
+				break;
+			}
+
+			#ifdef DAYZ_1_29
+			case "UG_AmbientSoundSet": {
+				m_UGTriggerObject.SetAmbientSoundSet(UG_AmbientSoundSet);
+				m_UGTriggerObject.Update();
+				break;
+			}
+			#endif
 		}
 	}
 

@@ -5,6 +5,11 @@ class UGTriggersExport
 	ref array<float> Size;
 	float            EyeAccommodation;
 	float            InterpolationSpeed;
+	int              UseLinePointFade;
+	string           AmbientSoundType;
+	#ifdef DAYZ_1_29
+	string           AmbientSoundSet;
+	#endif
 	ref array<ref UGBreadcrumbExport> Breadcrumbs;
 
 	void UGTriggersExport(vector pos, vector orient, vector size, float acc, float interp)
@@ -24,15 +29,21 @@ class UGTriggersExport
 
 		EyeAccommodation   = Math.Clamp(acc, 0.0, 1.0);
 		InterpolationSpeed = Math.Clamp(interp, 0.0, 1.0);
+		UseLinePointFade   = 0;
+		AmbientSoundType   = "";
+		#ifdef DAYZ_1_29
+		AmbientSoundSet    = "";
+		#endif
 	}
 }
 
 class UGBreadcrumbExport
 {
-	ref array<float> Position;  
-	float EyeAccommodation;      
-	int   UseRaycast;            
-	float Radius;                
+	ref array<float> Position;
+	float EyeAccommodation;
+	int   UseRaycast;
+	float Radius;
+	int   LightLerp;
 }
 class UGTriggersExportRoot
 {
@@ -77,8 +88,15 @@ static JsonUndergroundAreaTriggerData BuildJsonFromUG(UGTriggerObject ug)
     d.Size.Insert(size[2]);
 
     //Darkness
-    d.EyeAccommodation = acc;        
-    d.InterpolationSpeed = interp;   
+    d.EyeAccommodation = acc;
+    d.InterpolationSpeed = interp;
+
+    // Ambient sound properties
+    d.UseLinePointFade = ug.GetUseLinePointFade();
+    d.AmbientSoundType = ug.GetAmbientSoundType();
+    #ifdef DAYZ_1_29
+    d.AmbientSoundSet = ug.GetAmbientSoundSet();
+    #endif
 
     return d;
 }

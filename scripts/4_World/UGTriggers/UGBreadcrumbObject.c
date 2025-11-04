@@ -1,8 +1,9 @@
 class UGBreadcrumb : Building
 {
-    protected float m_UG_EyeAccommodation = 1.0; 
-    protected int   m_UG_UseRaycast = 1;        
-    protected float m_UG_Radius = -1.0;         
+    protected float m_UG_EyeAccommodation = 1.0;
+    protected int   m_UG_UseRaycast = 1;
+    protected float m_UG_Radius = -1.0;
+    protected bool  m_UG_LightLerp = false;
     protected ref Timer m_BCWatch;
     protected vector    m_LastPos;
 
@@ -43,10 +44,17 @@ class UGBreadcrumb : Building
     }
     int  GetUseRaycast() { return m_UG_UseRaycast; }
 
-    void SetRadius(float r) 
-    { 
+    void SetRadius(float r)
+    {
         m_UG_Radius = r;
         UG_RescanTriggersAround(GetPosition(), 200.0);
     }
     float GetRadius() { return m_UG_Radius; }
+
+    void SetLightLerp(bool value)
+    {
+        m_UG_LightLerp = value;
+        UG_RescanTriggersAround(GetPosition(), 200.0);
+    }
+    bool GetLightLerp() { return m_UG_LightLerp; }
 };

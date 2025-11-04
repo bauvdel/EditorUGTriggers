@@ -22,6 +22,14 @@ class UGTriggerSettings
     protected static const float DEFAULT_INNER_ACCOMMODATION = 0.0;
     protected static const float DEFAULT_INTERPOLATION = 1.0;
 
+    // Default values for new properties
+    protected static const bool DEFAULT_USE_LINE_POINT_FADE = false;
+    protected static const string DEFAULT_AMBIENT_SOUND_TYPE = "";
+    #ifdef DAYZ_1_29
+    protected static const string DEFAULT_AMBIENT_SOUND_SET = "";
+    #endif
+    protected static const bool DEFAULT_LIGHT_LERP = false;
+
     // UI notification delays
     protected static const int DIALOG_CLOSE_DELAY = 100;           // milliseconds
 
@@ -113,5 +121,28 @@ class UGTriggerSettings
     static int ClampType(int type)
     {
         return Math.Clamp(type, TYPE_MIN, TYPE_MAX);
+    }
+
+    // Getters for new properties
+    static bool GetDefaultUseLinePointFade()
+    {
+        return DEFAULT_USE_LINE_POINT_FADE;
+    }
+
+    static string GetDefaultAmbientSoundType()
+    {
+        return DEFAULT_AMBIENT_SOUND_TYPE;
+    }
+
+    #ifdef DAYZ_1_29
+    static string GetDefaultAmbientSoundSet()
+    {
+        return DEFAULT_AMBIENT_SOUND_SET;
+    }
+    #endif
+
+    static bool GetDefaultLightLerp()
+    {
+        return DEFAULT_LIGHT_LERP;
     }
 }

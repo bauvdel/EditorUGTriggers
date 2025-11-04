@@ -87,7 +87,20 @@ class EditorUGTriggerFile : EditorFileType
             interp = UG_Round2(ug.GetInterpolation());
         }
 
-        return new UGTriggersExport(pos, orient, size, acc, interp);
+        UGTriggersExport triggerExport = new UGTriggersExport(pos, orient, size, acc, interp);
+
+        if (ug) {
+            if (ug.GetUseLinePointFade())
+                triggerExport.UseLinePointFade = 1;
+            else
+                triggerExport.UseLinePointFade = 0;
+            triggerExport.AmbientSoundType = ug.GetAmbientSoundType();
+            #ifdef DAYZ_1_29
+            triggerExport.AmbientSoundSet = ug.GetAmbientSoundSet();
+            #endif
+        }
+
+        return triggerExport;
     }
 
         // Process breadcrumbs for transitional triggers
@@ -118,6 +131,10 @@ class EditorUGTriggerFile : EditorFileType
         eb.EyeAccommodation = UG_Round2(b.EyeAccommodation);
         eb.UseRaycast = b.UseRaycast;
         eb.Radius = b.Radius;
+        if (b.LightLerp)
+            eb.LightLerp = 1;
+        else
+            eb.LightLerp = 0;
         return eb;
     }
 
@@ -177,6 +194,11 @@ class EditorUGTriggerFile : EditorFileType
             arec.EyeAcc = acc;
             arec.Interp = interp;
             arec.Type   = ugType;
+            arec.UseLinePointFade = t.UseLinePointFade != 0;
+            arec.AmbientSoundType = t.AmbientSoundType;
+            #ifdef DAYZ_1_29
+            arec.AmbientSoundSet = t.AmbientSoundSet;
+            #endif
             g_UG_ToApply.Insert(arec);
 
             EditorObjectData dta = EditorObjectData.Create("UGTriggerObject", pos, orient, 1.0, EFE_DEFAULT);
@@ -195,6 +217,7 @@ class EditorUGTriggerFile : EditorFileType
                     bcrec.EyeAcc     = bAcc;
                     bcrec.UseRaycast = be.UseRaycast;
                     bcrec.Radius     = be.Radius;
+                    bcrec.LightLerp  = be.LightLerp != 0;
                     g_BC_ToApply.Insert(bcrec);
 
                     EditorObjectData bcDta = EditorObjectData.Create("UGBreadcrumb", bpos, borient, 1.0, EFE_DEFAULT);

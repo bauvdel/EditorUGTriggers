@@ -5,6 +5,7 @@ class UGBreadcrumbController: Managed
 	float BC_EyeAccommodation = 1.0;
 	int BC_UseRaycast = 0;
 	float BC_Radius = -1.0;
+	int BC_LightLerp = 0;
 
 	void UGBreadcrumbController(UGBreadcrumb bc_object)
 	{
@@ -14,6 +15,10 @@ class UGBreadcrumbController: Managed
 		BC_EyeAccommodation = bc_object.GetEyeAccommodation();
 		BC_UseRaycast = bc_object.GetUseRaycast();
 		BC_Radius = bc_object.GetRadius();
+		if (bc_object.GetLightLerp())
+			BC_LightLerp = 1;
+		else
+			BC_LightLerp = 0;
 	}
 
 	void PropertyChanged(string property_name)
@@ -39,6 +44,13 @@ class UGBreadcrumbController: Managed
 
 			case "BC_Radius": {
 				m_UGBreadcrumb.SetRadius(BC_Radius);
+				// Force update to ensure data is saved
+				m_UGBreadcrumb.Update();
+				break;
+			}
+
+			case "BC_LightLerp": {
+				m_UGBreadcrumb.SetLightLerp(BC_LightLerp != 0);
 				// Force update to ensure data is saved
 				m_UGBreadcrumb.Update();
 				break;
