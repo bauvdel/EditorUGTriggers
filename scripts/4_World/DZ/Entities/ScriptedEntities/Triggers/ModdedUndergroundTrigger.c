@@ -14,7 +14,7 @@ modded class UndergroundTrigger
 		SetExtents(-e, e);
 	}
 
-    //Over ride the existing trigger enter and leave events to call the client handler because the Server Handler was set to only run in dev mode, but we need it.
+    //Override the existing trigger enter and leave events to call the client handler because the Server Handler was set to only run in dev mode, but we need it.
 	override protected void OnEnterServerEvent(TriggerInsider insider)
 	{
 		OnEnterClientEvent(insider);
@@ -41,17 +41,15 @@ modded class UndergroundTrigger
 				handler.OnTriggerEnter(this);
 		}
 	}
-	
-	override protected void OnLeaveClientEvent(TriggerInsider insider) 
+
+	override protected void OnLeaveClientEvent(TriggerInsider insider)
 	{
 		PlayerBase player = PlayerBase.Cast(insider.GetObject());
 		if (player)
 		{
 			UndergroundHandlerClient handler = player.GetUndergroundHandler();
 			if (handler)
-			{
 				handler.OnTriggerLeave(this);
-			}
 		}
 	}
 

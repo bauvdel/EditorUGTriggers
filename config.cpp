@@ -5,7 +5,7 @@ class CfgPatches
 		units[] = {""};
 		weapons[] = {};
 		requiredVersion = 1.0;
-		requiredAddons[] = {"DZ_Data"};
+		requiredAddons[] = {"DZ_Scripts","Editor_Scripts","JM_CF_Scripts","DF_Scripts"};
 	};
 };
 class CfgMods

@@ -153,7 +153,6 @@ class UGTriggerObject : Building
 			if (!trig.m_Data)
 				trig.m_Data = new JsonUndergroundAreaTriggerData();
 			trig.m_Data.AmbientSoundType = soundType;
-			Print(string.Format("[UGTriggers] SetAmbientSoundType - Set m_Data.AmbientSoundType to '%1'", soundType));
 		}
 		else
 		{
@@ -183,6 +182,10 @@ class UGTriggerObject : Building
 			if (!trig.m_Data)
 				trig.m_Data = new JsonUndergroundAreaTriggerData();
 			trig.m_Data.AmbientSoundSet = soundSet;
+		}
+		else
+		{
+			Print("[UGTriggers] SetAmbientSoundSet - No linked trigger found!");
 		}
 
 		UGTriggerErrorHandler.LogInfo("System", string.Format("AmbientSoundSet set to '%1'", soundSet));
