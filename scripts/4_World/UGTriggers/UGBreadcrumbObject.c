@@ -12,6 +12,8 @@ class UGBreadcrumb : Building
         m_LastPos = GetPosition();
         m_BCWatch = new Timer(CALL_CATEGORY_SYSTEM);
         m_BCWatch.Run(0.10, this, "BC_Poll", null, true);
+
+        GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(this.UpdateVisualScale, 10, false);
     }
     void ~UGBreadcrumb()
     {
@@ -47,9 +49,26 @@ class UGBreadcrumb : Building
     void SetRadius(float r)
     {
         m_UG_Radius = r;
+        UpdateVisualScale();
         UG_RescanTriggersAround(GetPosition(), 200.0);
     }
+    
     float GetRadius() { return m_UG_Radius; }
+
+    void UpdateVisualScale()
+    {
+        float effectiveRadius;
+
+        if (m_UG_Radius == -1.0)
+            effectiveRadius = 5.0;
+        else
+            effectiveRadius = m_UG_Radius;
+
+        float currentScale = GetScale();
+        SetScale(effectiveRadius);
+        float newScale = GetScale();
+
+    }
 
     void SetLightLerp(bool value)
     {
