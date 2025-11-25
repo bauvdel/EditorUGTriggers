@@ -206,9 +206,6 @@ class UGTriggerObject : Building
 		InitializeSyncTimer();
 	}
 
-	/**
-	 * @brief Initialize trigger with default settings
-	 */
 	protected void InitializeDefaultSettings()
 	{
 		m_Size = Vector(1,1,1);
@@ -228,9 +225,6 @@ class UGTriggerObject : Building
    		m_LastPoseOri = GetOrientation();
 	}
 
-	/**
-	 * @brief Initialize the synchronization timer
-	 */
 	protected void InitializeSyncTimer()
 	{
 		m_SyncTimer = new Timer(CALL_CATEGORY_SYSTEM);

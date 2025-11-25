@@ -123,7 +123,6 @@ class UGTriggerSettings
         return Math.Clamp(type, TYPE_MIN, TYPE_MAX);
     }
 
-    // Getters for new properties
     static bool GetDefaultUseLinePointFade()
     {
         return DEFAULT_USE_LINE_POINT_FADE;

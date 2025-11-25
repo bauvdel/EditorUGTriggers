@@ -5,33 +5,32 @@ enum eUGTriggerType
     TRANSITIONAL = 2   // Transitional trigger - supports breadcrumbs
 }
 
-// Ambient sound types for underground triggers
-// Based on P:\scripts\3_Game\Sound.c line 34 - All available sound controllers
 enum eUGAmbientSoundType
 {
-    NONE = 0,              // No ambient sound
-    RAIN = 1,              // Rain sound controller
-    NIGHT = 2,             // Night sound controller
-    MEADOW = 3,            // Meadow sound controller
-    TREES = 4,             // Trees sound controller
-    HILLS = 5,             // Hills sound controller
-    HOUSES = 6,            // Houses sound controller
-    WINDY = 7,             // Windy sound controller
-    DEAD_BODY = 8,         // Dead body sound controller
-    SEA = 9,               // Sea sound controller
-    FOREST = 10,           // Forest sound controller
-    ALTITUDE_GROUND = 11,  // Altitude ground sound controller
-    ALTITUDE_SEA = 12,     // Altitude sea sound controller
-    ALTITUDE_SURFACE = 13, // Altitude surface sound controller
-    DAYTIME = 14,          // Daytime sound controller
-    SHOOTING = 15,         // Shooting sound controller
-    COAST = 16,            // Coast sound controller
-    WATER_DEPTH = 17,      // Water depth sound controller
-    OVERCAST = 18,         // Overcast sound controller
-    FOG = 19,              // Fog sound controller
-    SNOWFALL = 20,         // Snowfall sound controller
-    CAVE_SMALL = 21,       // Small cave ambient sound
-    CAVE_BIG = 22          // Big cave ambient sound
+    NONE = 0,             
+    RAIN = 1,              
+    NIGHT = 2,            
+    MEADOW = 3,            
+    TREES = 4,            
+    HILLS = 5,            
+    HOUSES = 6,            
+    WINDY = 7,            
+    DEAD_BODY = 8,         
+    SEA = 9,               
+    FOREST = 10,           
+    ALTITUDE_GROUND = 11,  
+    ALTITUDE_SEA = 12,     
+    ALTITUDE_SURFACE = 13, 
+    DAYTIME = 14,          
+    SHOOTING = 15,         
+    COAST = 16,           
+    WATER_DEPTH = 17,      
+    OVERCAST = 18,         
+    FOG = 19,              
+    SNOWFALL = 20,         
+    CAVE_SMALL = 21,       
+    CAVE_BIG = 22         
+    CONTAMINATION = 23
 }
 
 // Export operation results
@@ -187,6 +186,7 @@ class UGTriggerValidator
             case eUGAmbientSoundType.SNOWFALL: return "snowfall";
             case eUGAmbientSoundType.CAVE_SMALL: return "caveSmall";
             case eUGAmbientSoundType.CAVE_BIG: return "caveBig";
+            case eUGAmbientSoundType.CONTAMINATION: return "contamination";
             default: return "";
         }
         return "";
@@ -217,6 +217,7 @@ class UGTriggerValidator
         else if (soundTypeStr == "snowfall") return eUGAmbientSoundType.SNOWFALL;
         else if (soundTypeStr == "caveSmall") return eUGAmbientSoundType.CAVE_SMALL;
         else if (soundTypeStr == "caveBig") return eUGAmbientSoundType.CAVE_BIG;
+        else if (soundTypeStr == "contamination") return eUGAmbientSoundType.CONTAMINATION;
         else return eUGAmbientSoundType.NONE;
         return eUGAmbientSoundType.NONE;
     }
@@ -247,6 +248,7 @@ class UGTriggerValidator
         if (soundTypeStr == "snowfall") return true;
         if (soundTypeStr == "caveSmall") return true;
         if (soundTypeStr == "caveBig") return true;
+        if (soundTypeStr == "contamination") return true;
         return false;
     }
 
@@ -327,6 +329,9 @@ class UGTriggerValidator
 
         options.Insert("Cave Big");
         values.Insert(eUGAmbientSoundType.CAVE_BIG);
+
+        options.Insert("Contamination");
+        values.Insert(eUGAmbientSoundType.CONTAMINATION);
     }
 
     // Get display name for ambient sound type
@@ -357,6 +362,7 @@ class UGTriggerValidator
             case eUGAmbientSoundType.SNOWFALL: return "Snowfall";
             case eUGAmbientSoundType.CAVE_SMALL: return "Cave Small";
             case eUGAmbientSoundType.CAVE_BIG: return "Cave Big";
+            case eUGAmbientSoundType.CAVE_BIG: return "Contamination";
             default: return "Unknown";
         }
         return "Unknown";

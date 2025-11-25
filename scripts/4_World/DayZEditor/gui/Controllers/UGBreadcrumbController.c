@@ -30,28 +30,24 @@ class UGBreadcrumbController: Managed
 				if (BC_EyeAccommodation < 0.0) BC_EyeAccommodation = 0.0;
 				if (BC_EyeAccommodation > 1.0) BC_EyeAccommodation = 1.0;
 				m_UGBreadcrumb.SetEyeAccommodation(BC_EyeAccommodation);
-				// Force update to ensure data is saved
 				m_UGBreadcrumb.Update();
 				break;
 			}
 
 			case "BC_UseRaycast": {
 				m_UGBreadcrumb.SetUseRaycast(BC_UseRaycast);
-				// Force update to ensure data is saved
 				m_UGBreadcrumb.Update();
 				break;
 			}
 
 			case "BC_Radius": {
 				m_UGBreadcrumb.SetRadius(BC_Radius);
-				// Force update to ensure data is saved
 				m_UGBreadcrumb.Update();
 				break;
 			}
 
 			case "BC_LightLerp": {
 				m_UGBreadcrumb.SetLightLerp(BC_LightLerp != 0);
-				// Force update to ensure data is saved
 				m_UGBreadcrumb.Update();
 				break;
 			}
