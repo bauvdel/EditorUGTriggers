@@ -25,9 +25,7 @@ class UGTriggerSettings
     // Default values for new properties
     protected static const bool DEFAULT_USE_LINE_POINT_FADE = false;
     protected static const string DEFAULT_AMBIENT_SOUND_TYPE = "";
-    #ifdef DAYZ_1_29
     protected static const string DEFAULT_AMBIENT_SOUND_SET = "";
-    #endif
     protected static const bool DEFAULT_LIGHT_LERP = false;
 
     // UI notification delays
@@ -133,12 +131,10 @@ class UGTriggerSettings
         return DEFAULT_AMBIENT_SOUND_TYPE;
     }
 
-    #ifdef DAYZ_1_29
     static string GetDefaultAmbientSoundSet()
     {
         return DEFAULT_AMBIENT_SOUND_SET;
     }
-    #endif
 
     static bool GetDefaultLightLerp()
     {

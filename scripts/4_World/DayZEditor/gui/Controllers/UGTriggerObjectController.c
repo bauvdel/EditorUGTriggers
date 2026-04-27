@@ -9,9 +9,7 @@ class UGTriggerObjectController: Managed
 	int UG_LastType = -1;
 	int UG_UseLinePointFade = 0;
 	int UG_AmbientSoundType = 0;
-	#ifdef DAYZ_1_29
 	string UG_AmbientSoundSet = "";
-	#endif
 
 	void UGTriggerObjectController(UGTriggerObject ug_object)
 	{
@@ -28,9 +26,7 @@ class UGTriggerObjectController: Managed
 		else
 			UG_UseLinePointFade = 0;
 		UG_AmbientSoundType = UGTriggerValidator.GetAmbientSoundTypeFromString(ug_object.GetAmbientSoundType());
-		#ifdef DAYZ_1_29
 		UG_AmbientSoundSet = ug_object.GetAmbientSoundSet();
-		#endif
 	}
 
 	void PropertyChanged(string property_name)
@@ -96,13 +92,11 @@ class UGTriggerObjectController: Managed
 				break;
 			}
 
-			#ifdef DAYZ_1_29
 			case "UG_AmbientSoundSet": {
 				m_UGTriggerObject.SetAmbientSoundSet(UG_AmbientSoundSet);
 				m_UGTriggerObject.Update();
 				break;
 			}
-			#endif
 		}
 	}
 

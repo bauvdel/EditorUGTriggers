@@ -11,9 +11,7 @@ class UGTriggerObject : Building
 	// New property storage
 	protected bool m_UseLinePointFade = false;
 	protected string m_AmbientSoundType = "";
-	#ifdef DAYZ_1_29
 	protected string m_AmbientSoundSet = "";
-	#endif
 	
 	// ----- Type (0=Outer, 1=Inner, 2=Transitional) -----
 	int GetUGType()
@@ -170,8 +168,6 @@ class UGTriggerObject : Building
 		return m_AmbientSoundType;
 	}
 
-	// AmbientSoundSet property (DayZ 1.29+ only)
-	#ifdef DAYZ_1_29
 	void SetAmbientSoundSet(string soundSet)
 	{
 		m_AmbientSoundSet = soundSet;
@@ -198,7 +194,6 @@ class UGTriggerObject : Building
 			return trig.m_Data.AmbientSoundSet;
 		return m_AmbientSoundSet;
 	}
-	#endif
 
 	void UGTriggerObject()
 	{
@@ -214,9 +209,7 @@ class UGTriggerObject : Building
 		// Initialize new properties with defaults
 		m_UseLinePointFade = UGTriggerSettings.GetDefaultUseLinePointFade();
 		m_AmbientSoundType = "";
-		#ifdef DAYZ_1_29
 		m_AmbientSoundSet = "";
-		#endif
 
 		CreateTriggerIfMissing();
 		UpdateTrigger();
@@ -336,12 +329,8 @@ class UGTriggerObject : Building
 
 		m_UseLinePointFade = m_UndergroundTrigger.m_Data.UseLinePointFade;
 		m_AmbientSoundType = m_UndergroundTrigger.m_Data.AmbientSoundType;
-		#ifdef DAYZ_1_29
 		m_AmbientSoundSet = m_UndergroundTrigger.m_Data.AmbientSoundSet;
 		UGTriggerErrorHandler.LogInfo("System", string.Format("Loaded from m_Data - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
-		#else
-		UGTriggerErrorHandler.LogInfo("System", string.Format("Loaded from m_Data - UseLinePointFade:%1, SoundType:'%2'", m_UseLinePointFade, m_AmbientSoundType));
-		#endif
 	}
 
 	protected bool IsPointInsideOBB(vector p, out vector right, out vector up, out vector fwd, out vector pos, out vector half)
@@ -567,12 +556,8 @@ class UGTriggerObject : Building
 		// Sync ambient sound properties from local storage to m_Data
 		trig.m_Data.UseLinePointFade = m_UseLinePointFade;
 		trig.m_Data.AmbientSoundType = m_AmbientSoundType;
-		#ifdef DAYZ_1_29
 		trig.m_Data.AmbientSoundSet = m_AmbientSoundSet;
 		Print(string.Format("[UGTriggers] UpdateTriggerData - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
-		#else
-		Print(string.Format("[UGTriggers] UpdateTriggerData - UseLinePointFade:%1, SoundType:'%2'", m_UseLinePointFade, m_AmbientSoundType));
-		#endif
 	}
 
 	protected void ApplySizeTransform()
@@ -619,9 +604,7 @@ class UGTriggerApplyRec
     int    Type;
     bool   UseLinePointFade;
     string AmbientSoundType;
-    #ifdef DAYZ_1_29
     string AmbientSoundSet;
-    #endif
 }
 
 class UGBreadcrumbApplyRec
@@ -661,9 +644,7 @@ class UG_PostImportApplier
             ug.SetInterpolation(rec.Interp);
             ug.SetUseLinePointFade(rec.UseLinePointFade);
             ug.SetAmbientSoundType(rec.AmbientSoundType);
-            #ifdef DAYZ_1_29
             ug.SetAmbientSoundSet(rec.AmbientSoundSet);
-            #endif
 
             if (rec.Type == 2) ug.QueueCrumbRescan();
 

@@ -74,9 +74,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			}
 			ug_sound_group.Insert(sound_type_dropdown);
 
-			#ifdef DAYZ_1_29
 			ug_sound_group.Insert(new EditBoxPrefab("Sound Set", m_UGController, "UG_AmbientSoundSet"));
-			#endif
 
 			AddContent(ug_sound_group);
 		}
@@ -143,9 +141,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			int   firstType = 0;
 			int   firstUseLinePointFade = 0;
 			int   firstAmbientSoundType = 0;
-			#ifdef DAYZ_1_29
 			string firstAmbientSoundSet = "";
-			#endif
 
 			foreach (EditorObject eo2 : editor_objects) {
 				UGTriggerObject ug = UGTriggerObject.Cast(eo2.GetWorldObject());
@@ -160,9 +156,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 					else
 						firstUseLinePointFade = 0;
 					firstAmbientSoundType = UGTriggerValidator.GetAmbientSoundTypeFromString(ug.GetAmbientSoundType());
-					#ifdef DAYZ_1_29
 					firstAmbientSoundSet = ug.GetAmbientSoundSet();
-					#endif
 					seeded = true;
 				}
 			}
@@ -179,9 +173,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				m_UGController.UG_LastType = firstType;
 				m_UGController.UG_UseLinePointFade = firstUseLinePointFade;
 				m_UGController.UG_AmbientSoundType = firstAmbientSoundType;
-				#ifdef DAYZ_1_29
 				m_UGController.UG_AmbientSoundSet = firstAmbientSoundSet;
-				#endif
 
 				GroupPrefab ug_group_multi = new GroupPrefab("Underground Trigger (Selection)", this, string.Empty);
 				ug_group_multi.Insert(new VectorPrefab("Size (X,Y,Z)", m_UGController, "UG_SizeVec"));
@@ -214,9 +206,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				}
 				ug_sound_group_multi.Insert(sound_type_dropdown_multi);
 
-				#ifdef DAYZ_1_29
 				ug_sound_group_multi.Insert(new EditBoxPrefab("Sound Set", m_UGController, "UG_AmbientSoundSet"));
-				#endif
 
 				AddContent(ug_sound_group_multi);
 			}

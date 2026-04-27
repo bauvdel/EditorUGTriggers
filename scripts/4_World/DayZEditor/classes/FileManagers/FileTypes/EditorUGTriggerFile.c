@@ -95,9 +95,7 @@ class EditorUGTriggerFile : EditorFileType
             else
                 triggerExport.UseLinePointFade = 0;
             triggerExport.AmbientSoundType = ug.GetAmbientSoundType();
-            #ifdef DAYZ_1_29
             triggerExport.AmbientSoundSet = ug.GetAmbientSoundSet();
-            #endif
         }
 
         return triggerExport;
@@ -196,9 +194,7 @@ class EditorUGTriggerFile : EditorFileType
             arec.Type   = ugType;
             arec.UseLinePointFade = t.UseLinePointFade != 0;
             arec.AmbientSoundType = t.AmbientSoundType;
-            #ifdef DAYZ_1_29
             arec.AmbientSoundSet = t.AmbientSoundSet;
-            #endif
             g_UG_ToApply.Insert(arec);
 
             EditorObjectData dta = EditorObjectData.Create("UGTriggerObject", pos, orient, 1.0, EFE_DEFAULT);
