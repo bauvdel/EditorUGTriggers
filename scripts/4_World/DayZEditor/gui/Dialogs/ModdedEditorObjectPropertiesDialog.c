@@ -1,13 +1,20 @@
 modded class EditorObjectPropertiesDialog : EditorDialogBase
 {
-	vector UG_SizeVec;
-	float  UG_EyeAccommodation = 1.0; 
-	float  UG_Interpolation    = 1.0; 
-	int    UG_Type             = 0;  
-	int    UG_LastType = -1;
-	float  BC_EyeAccommodation = 1.0; 
-	int    BC_UseRaycast = 0;         
-	float  BC_Radius = -1.0;         
+	protected ref UGTriggerObjectController m_UGController;
+	protected ref UGBreadcrumbController m_BCController;
+
+	void ~EditorObjectPropertiesDialog()
+	{
+		// Ensure UG objects are properly saved when dialog closes
+		if (m_EditorObject) {
+			m_EditorObject.UpdateNet();
+		}
+		if (m_EditorObjects) {
+			foreach (EditorObject editor_object: m_EditorObjects) {
+				editor_object.UpdateNet();
+			}
+		}
+	}         
 
 	override void SetEditorObject(EditorObject editor_object)
 	{
@@ -21,59 +28,76 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 		}
 		//Build modded GroupPrefab without scale
 		m_EditorObject = editor_object;
-		Name       = m_EditorObject.GetDisplayName();
-    	Position   = m_EditorObject.GetPosition();
-    	Orientation= m_EditorObject.GetOrientation();
+		EditorObjectController controller = m_EditorObject.GetController();
 
 		GroupPrefab general_group = new GroupPrefab("#STR_EDITOR_GENERAL", this, string.Empty);
-    	general_group.Insert(new CheckBoxPrefab("#STR_EDITOR_SHOW", this, "Show"));
-    	general_group.Insert(new EditBoxPrefab("#STR_EDITOR_NAME", this, "Name"));
-    	general_group.Insert(new VectorPrefab("#STR_EDITOR_POSITION", this, "Position"));
-    	general_group.Insert(new VectorPrefab("#STR_EDITOR_ORIENTATION", this, "Orientation"));
+    	general_group.Insert(new CheckBoxPrefab("#STR_EDITOR_SHOW", controller, "Show"));
+    	general_group.Insert(new EditBoxPrefab("#STR_EDITOR_NAME", controller, "Name"));
+    	general_group.Insert(new VectorPrefab("#STR_EDITOR_POSITION", controller, "Position"));
+    	general_group.Insert(new VectorPrefab("#STR_EDITOR_ORIENTATION", controller, "Orientation"));
 
 		AddContent(general_group);
 		//Build UGTriggerObject GroupPrefab
 		if (isUG)
 		{
 			UGTriggerObject ug = UGTriggerObject.Cast(w);
-
-			UG_SizeVec          = ug.GetSize();
-			UG_EyeAccommodation = ug.GetEyeAccommodation();
-			UG_Interpolation    = ug.GetInterpolation();
-			UG_Type             = ug.GetUGType();
-			UG_LastType         = UG_Type; //Keep Trigger Type updated
+			m_UGController = new UGTriggerObjectController(ug);
 
 			GroupPrefab ug_group = new GroupPrefab("Underground Trigger", this, string.Empty);
-			ug_group.Insert(new VectorPrefab("Size", this, "UG_SizeVec"));
+			ug_group.Insert(new VectorPrefab("Size", m_UGController, "UG_SizeVec"));
 
-			DropdownListPrefab<int> type_dropdown = new DropdownListPrefab<int>("Type", this, "UG_Type");
+			DropdownListPrefab<int> type_dropdown = new DropdownListPrefab<int>("Type", m_UGController, "UG_Type");
 			type_dropdown["Outer"] = 0;
 			type_dropdown["Inner"] = 1;
 			type_dropdown["Transitional"] = 2;
 			ug_group.Insert(type_dropdown);
 
-			ug_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", this, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
-			ug_group.Insert(new EditBoxNumberPrefab("Interpolation Speed", this, "UG_Interpolation", 0.01, 0.0, 1.0));
+			ug_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
+			ug_group.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.5, -1.0, 20.0));
+
+			DropdownListPrefab<int> line_fade_dropdown = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
+			line_fade_dropdown["False"] = 0;
+			line_fade_dropdown["True"] = 1;
+			ug_group.Insert(line_fade_dropdown);
+
 			AddContent(ug_group);
+
+			// Separate group for ambient sound - gives dropdown more vertical space
+			GroupPrefab ug_sound_group = new GroupPrefab("Ambient Sound", this, string.Empty);
+
+			DropdownListPrefab<int> sound_type_dropdown = new DropdownListPrefab<int>("Sound Type", m_UGController, "UG_AmbientSoundType");
+			array<string> soundOptions = new array<string>();
+			array<int> soundValues = new array<int>();
+			UGTriggerValidator.GetAmbientSoundTypeOptions(soundOptions, soundValues);
+			for (int i = 0; i < soundOptions.Count(); i++) {
+				sound_type_dropdown[soundOptions[i]] = soundValues[i];
+			}
+			ug_sound_group.Insert(sound_type_dropdown);
+
+			ug_sound_group.Insert(new EditBoxPrefab("Sound Set", m_UGController, "UG_AmbientSoundSet"));
+
+			AddContent(ug_sound_group);
 		}
 
 		//Build UGBreadcrumb GroupPrefab
 		if (isCrumb)
 		{
 			UGBreadcrumb bc_obj = UGBreadcrumb.Cast(w);
-
-			BC_EyeAccommodation = bc_obj.GetEyeAccommodation();
-			BC_UseRaycast       = bc_obj.GetUseRaycast();
-			BC_Radius           = bc_obj.GetRadius();
+			m_BCController = new UGBreadcrumbController(bc_obj);
 
 			GroupPrefab bc_group = new GroupPrefab("Breadcrumb Properties", this, string.Empty);
-			bc_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", this, "BC_EyeAccommodation", 0.01, 0.0, 1.0));
+			bc_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_BCController, "BC_EyeAccommodation", 0.01, 0.0, 1.0));
 
-			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", this, "BC_UseRaycast");
+			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", m_BCController, "BC_UseRaycast");
 			bc_raycast["No"] = 0;  bc_raycast["Yes"] = 1;
 			bc_group.Insert(bc_raycast);
 
-			bc_group.Insert(new EditBoxNumberPrefab("Radius", this, "BC_Radius", 0.1, -1.0, 1000.0));
+			bc_group.Insert(new EditBoxNumberPrefab("Radius", m_BCController, "BC_Radius", 0.1, -1.0, 1000.0));
+
+			DropdownListPrefab<int> bc_lightlerp = new DropdownListPrefab<int>("Light Lerp", m_BCController, "BC_LightLerp");
+			bc_lightlerp["False"] = 0;
+			bc_lightlerp["True"] = 1;
+			bc_group.Insert(bc_lightlerp);
 
 			AddContent(bc_group);
 		}
@@ -113,8 +137,11 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 		bool seeded = false;
 		vector firstSize;
 		float firstAcc = 1.0;
-			float firstInterp = 1.0;
+			float firstInterp = 7.0;
 			int   firstType = 0;
+			int   firstUseLinePointFade = 0;
+			int   firstAmbientSoundType = 0;
+			string firstAmbientSoundSet = "";
 
 			foreach (EditorObject eo2 : editor_objects) {
 				UGTriggerObject ug = UGTriggerObject.Cast(eo2.GetWorldObject());
@@ -124,30 +151,65 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 					firstAcc    = ug.GetEyeAccommodation();
 					firstInterp = ug.GetInterpolation();
 					firstType   = ug.GetUGType();
+					if (ug.GetUseLinePointFade())
+						firstUseLinePointFade = 1;
+					else
+						firstUseLinePointFade = 0;
+					firstAmbientSoundType = UGTriggerValidator.GetAmbientSoundTypeFromString(ug.GetAmbientSoundType());
+					firstAmbientSoundSet = ug.GetAmbientSoundSet();
 					seeded = true;
 				}
 			}
 			if (!seeded) return;
 
-			UG_SizeVec          = firstSize;
-			UG_EyeAccommodation = firstAcc;
-			UG_Interpolation    = firstInterp;
-			UG_Type             = firstType;
-			UG_LastType         = UG_Type;
+			// For multi-select, create a temporary UG object to use as controller
+			UGTriggerObject temp_ug = UGTriggerObject.Cast(editor_objects[0].GetWorldObject());
+			if (temp_ug) {
+				m_UGController = new UGTriggerObjectController(temp_ug);
+				m_UGController.UG_SizeVec = firstSize;
+				m_UGController.UG_EyeAccommodation = firstAcc;
+				m_UGController.UG_Interpolation = firstInterp;
+				m_UGController.UG_Type = firstType;
+				m_UGController.UG_LastType = firstType;
+				m_UGController.UG_UseLinePointFade = firstUseLinePointFade;
+				m_UGController.UG_AmbientSoundType = firstAmbientSoundType;
+				m_UGController.UG_AmbientSoundSet = firstAmbientSoundSet;
 
-			GroupPrefab ug_group_multi = new GroupPrefab("Underground Trigger (Selection)", this, string.Empty);
-			ug_group_multi.Insert(new VectorPrefab("Size (X,Y,Z)", this, "UG_SizeVec"));
+				GroupPrefab ug_group_multi = new GroupPrefab("Underground Trigger (Selection)", this, string.Empty);
+				ug_group_multi.Insert(new VectorPrefab("Size (X,Y,Z)", m_UGController, "UG_SizeVec"));
 
-			DropdownListPrefab<int> type_dropdown = new DropdownListPrefab<int>("Type", this, "UG_Type");
-			type_dropdown["Outer"] = 0;
-			type_dropdown["Inner"] = 1;
-			type_dropdown["Transitional"] = 2;
-			ug_group_multi.Insert(type_dropdown);
+				DropdownListPrefab<int> type_dropdown = new DropdownListPrefab<int>("Type", m_UGController, "UG_Type");
+				type_dropdown["Outer"] = 0;
+				type_dropdown["Inner"] = 1;
+				type_dropdown["Transitional"] = 2;
+				ug_group_multi.Insert(type_dropdown);
 
-			ug_group_multi.Insert(new EditBoxNumberPrefab("Eye Accommodation", this, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
-			ug_group_multi.Insert(new EditBoxNumberPrefab("Interpolation Speed", this, "UG_Interpolation", 0.01, 0.0, 1.0));
-			//ug_group_multi.Insert(new ButtonPrefab("Apply to Selection", this, "UG_ApplyToSelection"));
-			AddContent(ug_group_multi);
+				ug_group_multi.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
+				ug_group_multi.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.5, -1.0, 20.0));
+
+				DropdownListPrefab<int> line_fade_dropdown_multi = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
+				line_fade_dropdown_multi["False"] = 0;
+				line_fade_dropdown_multi["True"] = 1;
+				ug_group_multi.Insert(line_fade_dropdown_multi);
+
+				AddContent(ug_group_multi);
+
+				// Separate group for ambient sound - gives dropdown more vertical space
+				GroupPrefab ug_sound_group_multi = new GroupPrefab("Ambient Sound (Selection)", this, string.Empty);
+
+				DropdownListPrefab<int> sound_type_dropdown_multi = new DropdownListPrefab<int>("Sound Type", m_UGController, "UG_AmbientSoundType");
+				array<string> soundOptionsMulti = new array<string>();
+				array<int> soundValuesMulti = new array<int>();
+				UGTriggerValidator.GetAmbientSoundTypeOptions(soundOptionsMulti, soundValuesMulti);
+				for (int j = 0; j < soundOptionsMulti.Count(); j++) {
+					sound_type_dropdown_multi[soundOptionsMulti[j]] = soundValuesMulti[j];
+				}
+				ug_sound_group_multi.Insert(sound_type_dropdown_multi);
+
+				ug_sound_group_multi.Insert(new EditBoxPrefab("Sound Set", m_UGController, "UG_AmbientSoundSet"));
+
+				AddContent(ug_sound_group_multi);
+			}
 			return;
 		}
 
@@ -159,159 +221,20 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			foreach (EditorObject eo3 : editor_objects) { bc0 = UGBreadcrumb.Cast(eo3.GetWorldObject()); if (bc0) break; }
 			if (!bc0) return;
 
-			BC_EyeAccommodation = bc0.GetEyeAccommodation();
-			BC_UseRaycast       = bc0.GetUseRaycast();
-			BC_Radius           = bc0.GetRadius();
+			m_BCController = new UGBreadcrumbController(bc0);
 
 			GroupPrefab bc_group = new GroupPrefab("Breadcrumb Properties (Selection)", this, string.Empty);
-			bc_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", this, "BC_EyeAccommodation", 0.01, 0.0, 1.0));
-			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", this, "BC_UseRaycast");
+			bc_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_BCController, "BC_EyeAccommodation", 0.01, 0.0, 1.0));
+			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", m_BCController, "BC_UseRaycast");
 			bc_raycast["No"] = 0; bc_raycast["Yes"] = 1; bc_group.Insert(bc_raycast);
-			bc_group.Insert(new EditBoxNumberPrefab("Radius", this, "BC_Radius", 0.1, -1.0, 10000.0));
+			bc_group.Insert(new EditBoxNumberPrefab("Radius", m_BCController, "BC_Radius", 0.1, -1.0, 10000.0));
+			DropdownListPrefab<int> bc_lightlerp_multi = new DropdownListPrefab<int>("Light Lerp", m_BCController, "BC_LightLerp");
+			bc_lightlerp_multi["False"] = 0;
+			bc_lightlerp_multi["True"] = 1;
+			bc_group.Insert(bc_lightlerp_multi);
 			//bc_group.Insert(new ButtonPrefab("Apply to Selection", this, "BC_ApplyToSelection"));
 			AddContent(bc_group);
 			return;
 		}
-	}
-
-	protected vector UG_ClampSizeVec(vector v)
-	{
-		if (v[0] < 1.0) v[0] = 1.0;
-		if (v[1] < 1.0) v[1] = 1.0;
-		if (v[2] < 1.0) v[2] = 1.0;
-		return v;
-	}
-
-	override void PropertyChanged(string property_name)
-	{
-	super.PropertyChanged(property_name);
-
-    if (property_name == "BC_EyeAccommodation" || property_name == "BC_UseRaycast" || property_name == "BC_Radius")
-    {
-        if (!m_EditorObject) return;
-        UGBreadcrumb bc = UGBreadcrumb.Cast(m_EditorObject.GetWorldObject());
-        if (!bc) return;
-
-        if (property_name == "BC_EyeAccommodation")
-        {
-            if (BC_EyeAccommodation < 0.0) BC_EyeAccommodation = 0.0;
-            if (BC_EyeAccommodation > 1.0) BC_EyeAccommodation = 1.0;
-            bc.SetEyeAccommodation(BC_EyeAccommodation);
-            return;
-        }
-        if (property_name == "BC_UseRaycast")
-        {
-            bc.SetUseRaycast(BC_UseRaycast);
-            return;
-        }
-        if (property_name == "BC_Radius")
-        {
-            bc.SetRadius(BC_Radius);
-            return;
-        }
-	}
-	if (!m_EditorObject) return;
-		UGTriggerObject ug = UGTriggerObject.Cast(m_EditorObject.GetWorldObject());
-		if (!ug) return;
-
-		UndergroundTrigger trig = ug.GetLinkedTrigger();
-
-		if (property_name == "UG_SizeVec")
-		{
-			UG_SizeVec = UG_ClampSizeVec(UG_SizeVec);
-			ug.SetSize(UG_SizeVec);
-			return;
-		}
-
-		if (property_name == "UG_Type")
-		{
-
-    		if (UG_LastType != UG_Type) 
-			{
-    		    if (UG_Type == 0) UG_EyeAccommodation = 1.00; else UG_EyeAccommodation = 0.00;
-    		    UG_LastType = UG_Type;
-    		}
-    		ug.SetUGType(UG_Type);
-    		ug.SetEyeAccommodation(Math.Round(Math.Clamp(UG_EyeAccommodation,0.0,1.0)*100.0)/100.0);
-    		return;
-
-		}
-
-		if (property_name == "UG_EyeAccommodation")
-		{
-        	UG_EyeAccommodation = Math.Clamp(Math.Round(UG_EyeAccommodation*100.0)/100.0, 0.0, 1.0);
-        	ug.SetEyeAccommodation(UG_EyeAccommodation);
-        	return;
-		}
-
-		if (property_name == "UG_Interpolation")
-		{
-        	UG_Interpolation = Math.Clamp(UG_Interpolation, 0.0, 1.0);
-        	ug.SetInterpolation(UG_Interpolation);
-        	return;
-		}
-	}
-
-	void UG_ApplyToSelection()
-	{
-		UG_SizeVec          = UG_ClampSizeVec(UG_SizeVec);
-		UG_EyeAccommodation = Math.Clamp(UG_EyeAccommodation, 0.0, 1.0);
-		UG_Interpolation    = Math.Clamp(UG_Interpolation, 0.0, 1.0);
-
-		foreach (EditorObject eo : m_EditorObjects)
-		{
-			UGTriggerObject ug = UGTriggerObject.Cast(eo.GetWorldObject());
-			if (!ug) continue;
-
-			ug.SetSize(UG_SizeVec);
-
-			UndergroundTrigger trig = ug.GetLinkedTrigger();
-			if (trig)
-			{
-				trig.m_Accommodation      = UG_EyeAccommodation;
-				trig.m_InterpolationSpeed = UG_Interpolation;
-			}
-		}
-	}
-
-	void OnCollectBreadcrumbs()
-	{
-		UGTriggerObject ug = UGTriggerObject.Cast(m_EditorObject.GetWorldObject());
-		if (!ug) return;
-		ug.CollectBreadcrumbs();
-	}
-
-	void OnUGTypeChanged()
-	{
-		UGTriggerObject ug = UGTriggerObject.Cast(m_EditorObject.GetWorldObject());
-		if (!ug) return;
-		if (UG_Type == 0) UG_EyeAccommodation = 1.00;
-		else if (UG_Type == 1) UG_EyeAccommodation = 0.00;
-		else UG_EyeAccommodation = 0.00;
-		ug.SetUGType(UG_Type);
-		ug.SetEyeAccommodation(UG_EyeAccommodation);
-	}
-
-	void OnUGEyeAccommodationChanged()
-	{
-		UG_EyeAccommodation = UG_Round2(UG_EyeAccommodation);
-		UGTriggerObject ug = UGTriggerObject.Cast(m_EditorObject.GetWorldObject());
-		if (!ug) return;
-		ug.SetEyeAccommodation(UG_EyeAccommodation);
-	}
-
-	void OnUGInterpolationChanged()
-	{
-		UG_Interpolation = Math.Clamp(UG_Interpolation, 0.0, 1.0);
-		UGTriggerObject ug = UGTriggerObject.Cast(m_EditorObject.GetWorldObject());
-		if (!ug) return;
-		ug.SetInterpolation(UG_Interpolation);
-	}
-
-	void OnUGSizeChanged()
-	{
-		UGTriggerObject ug = UGTriggerObject.Cast(m_EditorObject.GetWorldObject());
-		if (!ug) return;
-		ug.SetSize(UG_SizeVec);
 	}
 }

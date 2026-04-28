@@ -9,11 +9,15 @@ class UGPropSnapshot
 	int    UGType;
 	float  Eye;
 	float  Interp;
+	bool   UseLinePointFade;
+	string AmbientSoundType;
+	string AmbientSoundSet;
 	// Breadcrumb
-	int    IsBC;    
+	int    IsBC;
 	float  BC_Eye;
 	int    BC_Ray;
 	float  BC_Rad;
+	bool   BC_LightLerp;
 
 	float  ExpireAt;
 }
@@ -39,8 +43,11 @@ class UGUndoCache
 			s.UGType = ug.GetUGType();
 			s.Eye    = ug.GetEyeAccommodation();
 			s.Interp = ug.GetInterpolation();
+			s.UseLinePointFade = ug.GetUseLinePointFade();
+			s.AmbientSoundType = ug.GetAmbientSoundType();
+			s.AmbientSoundSet  = ug.GetAmbientSoundSet();
 			s.IsBC   = 0;
-			s.ExpireAt = GetGame().GetTime() * 0.001 + ttl;
+			s.ExpireAt = UGEditorGameCache.GetCachedTime() + ttl;
 			s_Snaps.Insert(s);
 			return;
 		}
@@ -56,7 +63,8 @@ class UGUndoCache
 			s2.BC_Eye = bc.GetEyeAccommodation();
 			s2.BC_Ray = bc.GetUseRaycast();
 			s2.BC_Rad = bc.GetRadius();
-			s2.ExpireAt = GetGame().GetTime() * 0.001 + ttl;
+			s2.BC_LightLerp = bc.GetLightLerp();
+			s2.ExpireAt = UGEditorGameCache.GetCachedTime() + ttl;
 			s_Snaps.Insert(s2);
 		}
 	}
@@ -65,7 +73,7 @@ class UGUndoCache
 	{
 		if (!editor || s_Snaps.Count() == 0) return;
 
-		float now = GetGame().GetTime() * 0.001;
+		float now = UGEditorGameCache.GetCachedTime();
 
 		// Purge expired
 		for (int i = s_Snaps.Count() - 1; i >= 0; i--) {
@@ -90,7 +98,9 @@ class UGUndoCache
 				ug.SetUGType(s.UGType);
 				ug.SetEyeAccommodation(s.Eye);
 				ug.SetInterpolation(s.Interp);
-				ug.GetLinkedTrigger();
+				ug.SetUseLinePointFade(s.UseLinePointFade);
+				ug.SetAmbientSoundType(s.AmbientSoundType);
+				ug.SetAmbientSoundSet(s.AmbientSoundSet);
 				s_Snaps.Remove(j);
 				continue;
 			}
@@ -100,7 +110,8 @@ class UGUndoCache
 				bc.SetEyeAccommodation(s.BC_Eye);
 				bc.SetUseRaycast(s.BC_Ray);
 				bc.SetRadius(s.BC_Rad);
-				UG_RescanTriggersAround(s.Pos, 200.0);
+				bc.SetLightLerp(s.BC_LightLerp);
+				UG_RescanTriggersAround(s.Pos, UGTriggerSettings.GetBreadcrumbScanRadius());
 				s_Snaps.Remove(j);
 				continue;
 			}

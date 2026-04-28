@@ -2,18 +2,22 @@
 class UGObjectClip
 {
 	string Type;
-	vector Position; 
+	vector Position;
 	vector Orientation;
 	vector Size;
 	string Name;
 
-	int    UGType = 0;   
+	int    UGType = 0;
 	float  EyeAccommodation = 1.0;
-	float  Interpolation    = 1.0; 
+	float  Interpolation    = 7.0;
+	bool   UseLinePointFade = false;
+	string AmbientSoundType = "";
+	string AmbientSoundSet = "";
 	bool   IsBreadcrumb = false;
 	float  BC_EyeAccommodation = 1.0;
-	int    BC_UseRaycast = 0; 
+	int    BC_UseRaycast = 0;
 	float  BC_Radius = -1.0;
+	bool   BC_LightLerp = false;
 };
 
 class UGClipboard
@@ -53,24 +57,26 @@ class UGClipboard
 			clip.Orientation = eo.GetOrientation();
 			clip.Name        = eo.GetDisplayName(); 
 
-			// UGTrigger
 			UGTriggerObject ug = UGTriggerObject.Cast(w);
 			if (ug) {
 				clip.Size             = ug.GetSize();
 				clip.UGType           = ug.GetUGType();
 				clip.EyeAccommodation = ug.GetEyeAccommodation();
 				clip.Interpolation    = ug.GetInterpolation();
+				clip.UseLinePointFade = ug.GetUseLinePointFade();
+				clip.AmbientSoundType = ug.GetAmbientSoundType();
+				clip.AmbientSoundSet  = ug.GetAmbientSoundSet();
 				s_Buffer.Insert(clip);
 				continue;
 			}
 
-			// Breadcrumb
 			UGBreadcrumb bc = UGBreadcrumb.Cast(w);
 			if (bc) {
 				clip.IsBreadcrumb        = true;
 				clip.BC_EyeAccommodation = bc.GetEyeAccommodation();
 				clip.BC_UseRaycast       = bc.GetUseRaycast();
 				clip.BC_Radius           = bc.GetRadius();
+				clip.BC_LightLerp        = bc.GetLightLerp();
 				s_Buffer.Insert(clip);
 				continue;
 			}
@@ -98,7 +104,7 @@ class UGClipboard
 		return n;
 	}
 
-	static int Paste(Editor editor, int pasteMode = 1, vector offsetPerIndex = "0 0 0", ref array<EditorObject> created_out = null)
+	static int Paste(Editor editor, int pasteMode = 1, vector offsetPerIndex = "0 0 0", out array<EditorObject> created_out = null)
 	{
 		if (s_Buffer.Count() == 0) {
 			return 0;
@@ -122,7 +128,7 @@ class UGClipboard
 		return SpawnFromBuffer(editor, anchor, pasteMode == 1, offsetPerIndex, created_out);
 	}
 
-	static int PasteAt(Editor editor, vector anchor, vector offsetPerIndex = "0 0 0", ref array<EditorObject> created_out = null)
+	static int PasteAt(Editor editor, vector anchor, vector offsetPerIndex = "0 0 0", out array<EditorObject> created_out = null)
 	{
 		if (s_Buffer.Count() == 0) {
 			return 0;
@@ -192,7 +198,7 @@ class UGClipboard
 		return r;
 	}
 
-	protected static int SpawnFromBuffer(Editor editor, vector anchor, bool relativeToCenter, vector offsetPerIndex, ref array<EditorObject> created_out)
+	protected static int SpawnFromBuffer(Editor editor, vector anchor, bool relativeToCenter, vector offsetPerIndex, out array<EditorObject> created_out)
 	{
 		ref array<ref EditorObjectData> write_data = new array<ref EditorObjectData>();
 
@@ -261,7 +267,6 @@ class UGClipboard
 		Object w = eo.GetWorldObject();
 		if (!w) return;
 
-		// UGTrigger
 		UGTriggerObject ug = UGTriggerObject.Cast(w);
 		if (ug) {
 			vector zeroSize = "0 0 0";
@@ -269,16 +274,18 @@ class UGClipboard
 			ug.SetUGType(clip.UGType);
 			ug.SetEyeAccommodation(clip.EyeAccommodation);
 			ug.SetInterpolation(clip.Interpolation);
-			ug.GetLinkedTrigger();
+			ug.SetUseLinePointFade(clip.UseLinePointFade);
+			ug.SetAmbientSoundType(clip.AmbientSoundType);
+			ug.SetAmbientSoundSet(clip.AmbientSoundSet);
 			return;
 		}
 
-		// Breadcrumb
 		UGBreadcrumb bc = UGBreadcrumb.Cast(w);
 		if (bc && clip.IsBreadcrumb) {
 			bc.SetEyeAccommodation(clip.BC_EyeAccommodation);
 			bc.SetUseRaycast(clip.BC_UseRaycast);
 			bc.SetRadius(clip.BC_Radius);
+			bc.SetLightLerp(clip.BC_LightLerp);
 			UG_RescanTriggersAround(worldPos, 200.0);
 			return;
 		}
