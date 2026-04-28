@@ -20,7 +20,9 @@ class UGTriggerSettings
     // Default accommodation and interpolation values
     protected static const float DEFAULT_OUTER_ACCOMMODATION = 1.0;
     protected static const float DEFAULT_INNER_ACCOMMODATION = 0.0;
-    protected static const float DEFAULT_INTERPOLATION = 1.0;
+    protected static const float DEFAULT_INTERPOLATION = 7.0;
+    protected static const float MIN_INTERPOLATION = -1.0;
+    protected static const float MAX_INTERPOLATION = 20.0;
 
     // Default values for new properties
     protected static const bool DEFAULT_USE_LINE_POINT_FADE = false;
@@ -84,6 +86,16 @@ class UGTriggerSettings
     static float GetDefaultInterpolation()
     {
         return DEFAULT_INTERPOLATION;
+    }
+
+    static float GetMinInterpolation()
+    {
+        return MIN_INTERPOLATION;
+    }
+
+    static float GetMaxInterpolation()
+    {
+        return MAX_INTERPOLATION;
     }
 
     static int GetDialogCloseDelay()

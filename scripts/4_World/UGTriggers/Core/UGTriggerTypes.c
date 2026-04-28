@@ -68,10 +68,9 @@ class UGTriggerValidator
         return accommodation >= 0.0 && accommodation <= 1.0;
     }
 
-    // Check interpolation speed range (0.0 to 1.0)
     static bool IsValidInterpolationSpeed(float speed)
     {
-        return speed >= 0.0 && speed <= 1.0;
+        return speed >= UGTriggerSettings.GetMinInterpolation() && speed <= UGTriggerSettings.GetMaxInterpolation();
     }
 
     // Check trigger size meets minimum dimensions
@@ -139,10 +138,9 @@ class UGTriggerValidator
         return Math.Clamp(value, 0.0, 1.0);
     }
 
-    // Clamp interpolation speed to valid range
     static float ClampInterpolationSpeed(float value)
     {
-        return Math.Clamp(value, 0.0, 1.0);
+        return Math.Clamp(value, UGTriggerSettings.GetMinInterpolation(), UGTriggerSettings.GetMaxInterpolation());
     }
 
     // Sanitize trigger size to minimum dimensions
@@ -362,7 +360,7 @@ class UGTriggerValidator
             case eUGAmbientSoundType.SNOWFALL: return "Snowfall";
             case eUGAmbientSoundType.CAVE_SMALL: return "Cave Small";
             case eUGAmbientSoundType.CAVE_BIG: return "Cave Big";
-            case eUGAmbientSoundType.CAVE_BIG: return "Contamination";
+            case eUGAmbientSoundType.CONTAMINATION: return "Contamination";
             default: return "Unknown";
         }
         return "Unknown";

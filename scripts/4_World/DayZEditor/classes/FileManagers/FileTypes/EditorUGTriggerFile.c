@@ -84,16 +84,13 @@ class EditorUGTriggerFile : EditorFileType
         if (ug) {
             size = ug.GetSize();
             acc = UG_Round2(ug.GetEyeAccommodation());
-            interp = UG_Round2(ug.GetInterpolation());
+            interp = ug.GetInterpolation();
         }
 
         UGTriggersExport triggerExport = new UGTriggersExport(pos, orient, size, acc, interp);
 
         if (ug) {
-            if (ug.GetUseLinePointFade())
-                triggerExport.UseLinePointFade = 1;
-            else
-                triggerExport.UseLinePointFade = 0;
+            triggerExport.UseLinePointFade = ug.GetUseLinePointFade();
             triggerExport.AmbientSoundType = ug.GetAmbientSoundType();
             triggerExport.AmbientSoundSet = ug.GetAmbientSoundSet();
         }
@@ -129,10 +126,7 @@ class EditorUGTriggerFile : EditorFileType
         eb.EyeAccommodation = UG_Round2(b.EyeAccommodation);
         eb.UseRaycast = b.UseRaycast;
         eb.Radius = b.Radius;
-        if (b.LightLerp)
-            eb.LightLerp = 1;
-        else
-            eb.LightLerp = 0;
+        eb.LightLerp = b.LightLerp;
         return eb;
     }
 
@@ -180,8 +174,7 @@ class EditorUGTriggerFile : EditorFileType
             vector size   = Vector(t.Size[0], t.Size[1], t.Size[2]);
             float acc = t.EyeAccommodation;
             acc = UG_Round2(Math.Clamp(acc, 0.0, 1.0));
-            float interp = t.InterpolationSpeed;
-            interp = UG_Round2(Math.Clamp(interp, 0.0, 1.0));
+            float interp = UGTriggerValidator.ClampInterpolationSpeed(t.InterpolationSpeed);
 
             // Determine trigger type based on import data characteristics
             int ugType = DetermineTriggerTypeFromImportData(t, acc);
@@ -192,7 +185,7 @@ class EditorUGTriggerFile : EditorFileType
             arec.EyeAcc = acc;
             arec.Interp = interp;
             arec.Type   = ugType;
-            arec.UseLinePointFade = t.UseLinePointFade != 0;
+            arec.UseLinePointFade = t.UseLinePointFade;
             arec.AmbientSoundType = t.AmbientSoundType;
             arec.AmbientSoundSet = t.AmbientSoundSet;
             g_UG_ToApply.Insert(arec);
@@ -213,7 +206,7 @@ class EditorUGTriggerFile : EditorFileType
                     bcrec.EyeAcc     = bAcc;
                     bcrec.UseRaycast = be.UseRaycast;
                     bcrec.Radius     = be.Radius;
-                    bcrec.LightLerp  = be.LightLerp != 0;
+                    bcrec.LightLerp  = be.LightLerp;
                     g_BC_ToApply.Insert(bcrec);
 
                     EditorObjectData bcDta = EditorObjectData.Create("UGBreadcrumb", bpos, borient, 1.0, EFE_DEFAULT);

@@ -5,7 +5,7 @@ class UGTriggersExport
 	ref array<float> Size;
 	float            EyeAccommodation;
 	float            InterpolationSpeed;
-	int              UseLinePointFade;
+	bool             UseLinePointFade;
 	string           AmbientSoundType;
 	string           AmbientSoundSet;
 	ref array<ref UGBreadcrumbExport> Breadcrumbs;
@@ -26,8 +26,8 @@ class UGTriggersExport
 		Size.Insert(size[0]); Size.Insert(size[1]); Size.Insert(size[2]);
 
 		EyeAccommodation   = Math.Clamp(acc, 0.0, 1.0);
-		InterpolationSpeed = Math.Clamp(interp, 0.0, 1.0);
-		UseLinePointFade   = 0;
+		InterpolationSpeed = UGTriggerValidator.ClampInterpolationSpeed(interp);
+		UseLinePointFade   = false;
 		AmbientSoundType   = "";
 		AmbientSoundSet    = "";
 	}
@@ -37,9 +37,9 @@ class UGBreadcrumbExport
 {
 	ref array<float> Position;
 	float EyeAccommodation;
-	int   UseRaycast;
+	bool  UseRaycast;
 	float Radius;
-	int   LightLerp;
+	bool  LightLerp;
 }
 class UGTriggersExportRoot
 {
@@ -56,8 +56,8 @@ static JsonUndergroundAreaTriggerData BuildJsonFromUG(UGTriggerObject ug)
     vector orient = ug.GetOrientation();
     vector size   = ug.GetSize();
 
-    float acc = 1.0;
-    float interp = 1.0;
+    float acc = UGTriggerSettings.GetDefaultOuterAccommodation();
+    float interp = UGTriggerSettings.GetDefaultInterpolation();
     if (t) {
         acc    = t.m_Accommodation;
         interp = t.m_InterpolationSpeed;

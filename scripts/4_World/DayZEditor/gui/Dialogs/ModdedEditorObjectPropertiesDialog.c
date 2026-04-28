@@ -53,7 +53,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			ug_group.Insert(type_dropdown);
 
 			ug_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
-			ug_group.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.01, 0.0, 1.0));
+			ug_group.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.5, -1.0, 20.0));
 
 			DropdownListPrefab<int> line_fade_dropdown = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
 			line_fade_dropdown["False"] = 0;
@@ -137,7 +137,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 		bool seeded = false;
 		vector firstSize;
 		float firstAcc = 1.0;
-			float firstInterp = 1.0;
+			float firstInterp = 7.0;
 			int   firstType = 0;
 			int   firstUseLinePointFade = 0;
 			int   firstAmbientSoundType = 0;
@@ -185,7 +185,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				ug_group_multi.Insert(type_dropdown);
 
 				ug_group_multi.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
-				ug_group_multi.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.01, 0.0, 1.0));
+				ug_group_multi.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.5, -1.0, 20.0));
 
 				DropdownListPrefab<int> line_fade_dropdown_multi = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
 				line_fade_dropdown_multi["False"] = 0;

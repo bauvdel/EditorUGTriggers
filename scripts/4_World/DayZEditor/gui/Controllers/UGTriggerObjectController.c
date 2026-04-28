@@ -4,7 +4,7 @@ class UGTriggerObjectController: Managed
 
 	vector UG_SizeVec;
 	float UG_EyeAccommodation = 1.0;
-	float UG_Interpolation = 1.0;
+	float UG_Interpolation = 7.0;
 	int UG_Type = 0;
 	int UG_LastType = -1;
 	int UG_UseLinePointFade = 0;
@@ -70,7 +70,7 @@ class UGTriggerObjectController: Managed
 			}
 
 			case "UG_Interpolation": {
-				UG_Interpolation = Math.Clamp(UG_Interpolation, 0.0, 1.0);
+				UG_Interpolation = UGTriggerValidator.ClampInterpolationSpeed(UG_Interpolation);
 				m_UGTriggerObject.SetInterpolation(UG_Interpolation);
 				// Also update the linked UndergroundTrigger for export
 				if (trig) {

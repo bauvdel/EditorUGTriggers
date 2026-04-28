@@ -86,10 +86,9 @@ class UGTriggerObject : Building
 
 	void SetInterpolation(float v)
 	{
-		// Validate and clamp interpolation speed
 		if (!UGTriggerValidator.IsValidInterpolationSpeed(v))
 		{
-			UGTriggerErrorHandler.HandleValidationError("interpolation speed", v.ToString(), "0.0-1.0");
+			UGTriggerErrorHandler.HandleValidationError("interpolation speed", v.ToString(), string.Format("%1 to %2", UGTriggerSettings.GetMinInterpolation(), UGTriggerSettings.GetMaxInterpolation()));
 		}
 		v = UGTriggerValidator.ClampInterpolationSpeed(v);
 
@@ -154,7 +153,6 @@ class UGTriggerObject : Building
 		}
 		else
 		{
-			Print("[UGTriggers] SetAmbientSoundType - No linked trigger found!");
 		}
 
 		UGTriggerErrorHandler.LogInfo("System", string.Format("AmbientSoundType set to '%1'", soundType));
@@ -181,7 +179,6 @@ class UGTriggerObject : Building
 		}
 		else
 		{
-			Print("[UGTriggers] SetAmbientSoundSet - No linked trigger found!");
 		}
 
 		UGTriggerErrorHandler.LogInfo("System", string.Format("AmbientSoundSet set to '%1'", soundSet));
@@ -197,6 +194,9 @@ class UGTriggerObject : Building
 
 	void UGTriggerObject()
 	{
+		m_UndergroundTrigger = null;
+		m_SyncTimer = null;
+
 		InitializeDefaultSettings();
 		InitializeSyncTimer();
 	}
@@ -206,7 +206,6 @@ class UGTriggerObject : Building
 		m_Size = Vector(1,1,1);
 		ApplySizeTransform();
 
-		// Initialize new properties with defaults
 		m_UseLinePointFade = UGTriggerSettings.GetDefaultUseLinePointFade();
 		m_AmbientSoundType = "";
 		m_AmbientSoundSet = "";
@@ -279,14 +278,12 @@ class UGTriggerObject : Building
 		if (!trig.m_Data)
 		{
 			trig.m_Data = new JsonUndergroundAreaTriggerData();
-			Print("[UGTriggers] EnsureDataInitialized - Created new m_Data");
 		}
 
 		// Always ensure Breadcrumbs array exists to prevent null pointer in UndergroundHandlerClient
 		if (!trig.m_Data.Breadcrumbs)
 		{
 			trig.m_Data.Breadcrumbs = new array<ref JsonUndergroundAreaBreadcrumb>();
-			Print("[UGTriggers] EnsureDataInitialized - Created empty Breadcrumbs array");
 		}
 	}
 
@@ -333,7 +330,7 @@ class UGTriggerObject : Building
 		UGTriggerErrorHandler.LogInfo("System", string.Format("Loaded from m_Data - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
 	}
 
-	protected bool IsPointInsideOBB(vector p, out vector right, out vector up, out vector fwd, out vector pos, out vector half)
+	protected bool IsPointInsideOBB(vector p, out vector right, out vector up, out vector fwd, out vector pos, out vector half, float margin = 0)
 	{
 		vector T[4];
 		GetTransform(T);
@@ -348,12 +345,12 @@ class UGTriggerObject : Building
 		float ly = d * up;
 		float lz = d * fwd;
 
-		return (Math.AbsFloat(lx) <= half[0] + 1e-3 && Math.AbsFloat(ly) <= half[1] + 1e-3 && Math.AbsFloat(lz) <= half[2] + 1e-3);
+		float e = margin + 1e-3;
+		return (Math.AbsFloat(lx) <= half[0] + e && Math.AbsFloat(ly) <= half[1] + e && Math.AbsFloat(lz) <= half[2] + e);
 	}
 
 	void GetBreadcrumbs()
 	{
-		Print("[EditorUGTriggers] GetBreadcrumbs: " + this);
 
 		UndergroundTrigger t = GetLinkedTrigger();
 		if (!t) { CreateTriggerIfMissing(); t = GetLinkedTrigger(); if (!t) { Print("[UG][ERR] no trigger; abort"); return; } }
@@ -362,40 +359,27 @@ class UGTriggerObject : Building
 		if (GetUGType() != 2)
 		{
 			if (t.m_Data) { t.m_Data.Breadcrumbs = null; }
-			Print("[EditorUGTriggers] Not Transitional; cleared crumbs");
 			return;
 		}
-
-		ref array<Object> results = new array<Object>();
-		float r = Math.Max(Math.Max(m_Size[0], m_Size[1]), m_Size[2]) * 1.5;
-		GetGame().GetObjectsAtPosition3D(GetPosition(), r, results, null);
 
 		ref array<ref JsonUndergroundAreaBreadcrumb> crumbs = new array<ref JsonUndergroundAreaBreadcrumb>();
 
 		vector right, up, fwd, pos, half;
-		foreach (Object obj : results)
+		array<UGBreadcrumb> allBC = UGBreadcrumb.GetAll();
+		foreach (UGBreadcrumb crumb : allBC)
 		{
-			if (!obj) continue;
-			if (obj.GetType() != "UGBreadcrumb") continue;
+			if (!crumb) continue;
 
-			vector wp = obj.GetPosition();
-			if (!IsPointInsideOBB(wp, right, up, fwd, pos, half)) continue;
+			vector wp = crumb.GetPosition();
+			if (!IsPointInsideOBB(wp, right, up, fwd, pos, half, 1.0)) continue;
 
-			UGBreadcrumb crumb = UGBreadcrumb.Cast(obj);
 			JsonUndergroundAreaBreadcrumb bc = new JsonUndergroundAreaBreadcrumb();
 			bc.Position = new array<float>();
 			bc.Position.Insert(wp[0]); bc.Position.Insert(wp[1]); bc.Position.Insert(wp[2]);
-			if (crumb) {
-				bc.EyeAccommodation = crumb.GetEyeAccommodation();
-				bc.UseRaycast = crumb.GetUseRaycast();
-				bc.Radius    = crumb.GetRadius();
-
-			} else {
-				bc.EyeAccommodation = 1.0;
-				bc.UseRaycast = 0;
-				bc.Radius    = -1.0;
-
-			}
+			bc.EyeAccommodation = crumb.GetEyeAccommodation();
+			bc.UseRaycast = crumb.GetUseRaycast();
+			bc.Radius    = crumb.GetRadius();
+			bc.LightLerp = crumb.GetLightLerp();
 
 			crumbs.Insert(bc);
 		}
@@ -413,12 +397,10 @@ class UGTriggerObject : Building
 			if (m_DesiredUGType == 2)
 				t.m_Type = EUndergroundTriggerType.TRANSITIONING;
 
-			Print("[EditorUGTriggers] attached " + crumbs.Count() + " breadcrumbs");
 		}
 		else
 		{
 			t.m_Data.Breadcrumbs = null;
-			Print("[EditorUGTriggers][WARN] need >=2 breadcrumbs; cleared breadcrumb mode");
 		}
 	}
 
@@ -433,35 +415,25 @@ class UGTriggerObject : Building
 			return;
 		}
 
-		ref array<Object> objs = new array<Object>();
-		float r = Math.Max(Math.Max(m_Size[0], m_Size[1]), m_Size[2]) * 1.5;
-		GetGame().GetObjectsAtPosition3D(GetPosition(), r, objs, null);
-
 		ref array<ref JsonUndergroundAreaBreadcrumb> crumbs = new array<ref JsonUndergroundAreaBreadcrumb>();
 		vector right, up, fwd, pos, half;
 
-		for (int i = 0; i < objs.Count(); i++)
+		array<UGBreadcrumb> allBC = UGBreadcrumb.GetAll();
+		for (int i = 0; i < allBC.Count(); i++)
 		{
-			Object o = objs[i];
-			if (!o) continue;
-			if (o.GetType() != "UGBreadcrumb") continue;
+			UGBreadcrumb crumb = allBC[i];
+			if (!crumb) continue;
 
-			vector p = o.GetPosition();
-			if (!IsPointInsideOBB(p, right, up, fwd, pos, half)) continue;
+			vector p = crumb.GetPosition();
+			if (!IsPointInsideOBB(p, right, up, fwd, pos, half, 1.0)) continue;
 
-			UGBreadcrumb crumb = UGBreadcrumb.Cast(o);
 			JsonUndergroundAreaBreadcrumb bc = new JsonUndergroundAreaBreadcrumb();
 			bc.Position = new array<float>();
 			bc.Position.Insert(p[0]); bc.Position.Insert(p[1]); bc.Position.Insert(p[2]);
-			if (crumb) {
-				bc.EyeAccommodation = crumb.GetEyeAccommodation();
-				bc.UseRaycast = crumb.GetUseRaycast();
-				bc.Radius    = crumb.GetRadius();
-			} else {
-				bc.EyeAccommodation = 1.0;
-				bc.UseRaycast = 0;
-				bc.Radius    = -1.0;
-			}
+			bc.EyeAccommodation = crumb.GetEyeAccommodation();
+			bc.UseRaycast = crumb.GetUseRaycast();
+			bc.Radius    = crumb.GetRadius();
+			bc.LightLerp = crumb.GetLightLerp();
 
 			crumbs.Insert(bc);
 		}
@@ -557,7 +529,6 @@ class UGTriggerObject : Building
 		trig.m_Data.UseLinePointFade = m_UseLinePointFade;
 		trig.m_Data.AmbientSoundType = m_AmbientSoundType;
 		trig.m_Data.AmbientSoundSet = m_AmbientSoundSet;
-		Print(string.Format("[UGTriggers] UpdateTriggerData - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
 	}
 
 	protected void ApplySizeTransform()
@@ -694,16 +665,15 @@ class UG_PostImportApplier
 
     static UGBreadcrumb FindNearestBC(vector pos, float radius)
     {
-        ref array<Object> objs = new array<Object>();
-        GetGame().GetObjectsAtPosition3D(pos, radius, objs, null);
-
+        float r2 = radius * radius;
         float bestD2 = 1e12;
         UGBreadcrumb best;
-        foreach (Object o : objs)
+        array<UGBreadcrumb> allBC = UGBreadcrumb.GetAll();
+        foreach (UGBreadcrumb bc : allBC)
         {
-            UGBreadcrumb bc = UGBreadcrumb.Cast(o);
             if (!bc) continue;
             float d2 = vector.DistanceSq(bc.GetPosition(), pos);
+            if (d2 > r2) continue;
             if (d2 < bestD2) { bestD2 = d2; best = bc; }
         }
         return best;

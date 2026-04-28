@@ -45,9 +45,9 @@ class UGTriggerErrorHandler
         string fullMessage = string.Format("[UG Triggers] %1 [%2] %3: %4",
                                           timestamp, severityText, category, message);
 
-        Print(fullMessage);
+        if (severity >= SEVERITY_WARNING)
+            Print(fullMessage);
 
-        // Show critical errors to user
         if (severity >= SEVERITY_ERROR)
         {
             ShowUserNotification(severityText, category, message);
@@ -234,7 +234,7 @@ class UGTriggerErrorHandler
 
         if (!UGTriggerValidator.IsValidInterpolationSpeed(interpolation))
         {
-            HandleValidationError("interpolation speed", interpolation.ToString(), "0.0-1.0");
+            HandleValidationError("interpolation speed", interpolation.ToString(), string.Format("%1 to %2", UGTriggerSettings.GetMinInterpolation(), UGTriggerSettings.GetMaxInterpolation()));
             isValid = false;
         }
 

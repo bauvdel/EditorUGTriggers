@@ -12,7 +12,6 @@
             <input name="UGTRIG_Cut" loc="Cut Trigger" />
             <input name="UGTRIG_Duplicate" loc="Duplicate Trigger" />
             <input name="UGTRIG_SelectAll" loc="Select All Triggers" />
-            <input name="UGTRIG_LogNetworkID" loc="Log Building NetworkID (Hover)" />
         </actions>
     </inputs>
 
@@ -60,10 +59,5 @@
                <btn name="kB"/>
             </btn>
         </input>
-        <input name="UGTRIG_LogNetworkID">
-            <btn name="kLMenu">
-               <btn name="kN"/>
-            </btn>
-        </input> 
     </preset>
 </modded_inputs>
