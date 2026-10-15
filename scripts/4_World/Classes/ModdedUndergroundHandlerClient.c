@@ -27,7 +27,9 @@ modded class UndergroundHandlerClient
 			if (indx > 32)
 				break;
 
-			float dist = vector.Distance(m_Player.GetPosition(), crumb.GetPosition());
+			vector playerPosition = m_Player.GetPosition();
+			vector crumbPosition = crumb.GetPosition();
+			float dist = vector.Distance(playerPosition, crumbPosition);
 			float crumbRadius = m_TransitionalTrigger.m_Data.Breadcrumbs[indx].Radius;
 			float maxRadiusAllowed = DISTANCE_CUTOFF;
 
@@ -61,9 +63,8 @@ modded class UndergroundHandlerClient
 				excludeMask = (excludeMask | (1 << indx));
 			else if (m_TransitionalTrigger.m_Data.Breadcrumbs[indx].UseRaycast)
 			{
-				vector rayStart;
-				MiscGameplayFunctions.GetHeadBonePos(m_Player, rayStart);
-				vector rayEnd = crumb.GetPosition();
+				vector rayStart = MiscGameplayFunctions.GetPlayerHeadPosition(m_Player);
+				vector rayEnd = crumbPosition;
 				vector hitPos, hitNormal;
 				float hitFraction;
 				Object hitObj;
@@ -78,7 +79,7 @@ modded class UndergroundHandlerClient
 
 			#ifdef DIAG_DEVELOPER
 			if (DiagMenu.GetBool(DiagMenuIDs.UNDERGROUND_SHOW_BREADCRUMB))
-				Debug.DrawSphere(crumb.GetPosition(), 0.1, COLOR_RED, ShapeFlags.ONCE);
+				Debug.DrawSphere(crumbPosition, 0.1, COLOR_RED, ShapeFlags.ONCE);
 			#endif
 		}
 
