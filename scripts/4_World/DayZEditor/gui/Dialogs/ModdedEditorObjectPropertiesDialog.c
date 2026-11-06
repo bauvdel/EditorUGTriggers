@@ -1,4 +1,4 @@
-modded class EditorObjectPropertiesDialog : EditorDialogBase
+modded class EditorObjectPropertiesDialog
 {
 	protected ref UGTriggerObjectController m_UGController;
 	protected ref UGBreadcrumbController m_BCController;
@@ -46,7 +46,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			GroupPrefab ug_group = new GroupPrefab("Underground Trigger", this, string.Empty);
 			ug_group.Insert(new VectorPrefab("Size", m_UGController, "UG_SizeVec"));
 
-			DropdownListPrefab<int> type_dropdown = new DropdownListPrefab<int>("Type", m_UGController, "UG_Type");
+			UGDropdownListPrefab type_dropdown = new UGDropdownListPrefab("Type", m_UGController, "UG_Type");
 			type_dropdown["Outer"] = 0;
 			type_dropdown["Inner"] = 1;
 			type_dropdown["Transitional"] = 2;
@@ -55,7 +55,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			ug_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
 			ug_group.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.5, -1.0, 20.0));
 
-			DropdownListPrefab<int> line_fade_dropdown = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
+			UGDropdownListPrefab line_fade_dropdown = new UGDropdownListPrefab("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
 			line_fade_dropdown["False"] = 0;
 			line_fade_dropdown["True"] = 1;
 			ug_group.Insert(line_fade_dropdown);
@@ -65,7 +65,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			// Separate group for ambient sound - gives dropdown more vertical space
 			GroupPrefab ug_sound_group = new GroupPrefab("Ambient Sound", this, string.Empty);
 
-			DropdownListPrefab<int> sound_type_dropdown = new DropdownListPrefab<int>("Sound Type", m_UGController, "UG_AmbientSoundType");
+			UGDropdownListPrefab sound_type_dropdown = new UGDropdownListPrefab("Sound Type", m_UGController, "UG_AmbientSoundType");
 			array<string> soundOptions = new array<string>();
 			array<int> soundValues = new array<int>();
 			UGTriggerValidator.GetAmbientSoundTypeOptions(soundOptions, soundValues);
@@ -88,13 +88,13 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 			GroupPrefab bc_group = new GroupPrefab("Breadcrumb Properties", this, string.Empty);
 			bc_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_BCController, "BC_EyeAccommodation", 0.01, 0.0, 1.0));
 
-			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", m_BCController, "BC_UseRaycast");
+			UGDropdownListPrefab bc_raycast = new UGDropdownListPrefab("Use Raycast", m_BCController, "BC_UseRaycast");
 			bc_raycast["No"] = 0;  bc_raycast["Yes"] = 1;
 			bc_group.Insert(bc_raycast);
 
 			bc_group.Insert(new EditBoxNumberPrefab("Radius", m_BCController, "BC_Radius", 0.1, -1.0, 1000.0));
 
-			DropdownListPrefab<int> bc_lightlerp = new DropdownListPrefab<int>("Light Lerp", m_BCController, "BC_LightLerp");
+			UGDropdownListPrefab bc_lightlerp = new UGDropdownListPrefab("Light Lerp", m_BCController, "BC_LightLerp");
 			bc_lightlerp["False"] = 0;
 			bc_lightlerp["True"] = 1;
 			bc_group.Insert(bc_lightlerp);
@@ -178,7 +178,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				GroupPrefab ug_group_multi = new GroupPrefab("Underground Trigger (Selection)", this, string.Empty);
 				ug_group_multi.Insert(new VectorPrefab("Size (X,Y,Z)", m_UGController, "UG_SizeVec"));
 
-				DropdownListPrefab<int> type_dropdown = new DropdownListPrefab<int>("Type", m_UGController, "UG_Type");
+				UGDropdownListPrefab type_dropdown = new UGDropdownListPrefab("Type", m_UGController, "UG_Type");
 				type_dropdown["Outer"] = 0;
 				type_dropdown["Inner"] = 1;
 				type_dropdown["Transitional"] = 2;
@@ -187,7 +187,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				ug_group_multi.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_UGController, "UG_EyeAccommodation", 0.01, 0.0, 1.0));
 				ug_group_multi.Insert(new EditBoxNumberPrefab("Interpolation Speed", m_UGController, "UG_Interpolation", 0.5, -1.0, 20.0));
 
-				DropdownListPrefab<int> line_fade_dropdown_multi = new DropdownListPrefab<int>("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
+				UGDropdownListPrefab line_fade_dropdown_multi = new UGDropdownListPrefab("Use Line Point Fade", m_UGController, "UG_UseLinePointFade");
 				line_fade_dropdown_multi["False"] = 0;
 				line_fade_dropdown_multi["True"] = 1;
 				ug_group_multi.Insert(line_fade_dropdown_multi);
@@ -197,7 +197,7 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 				// Separate group for ambient sound - gives dropdown more vertical space
 				GroupPrefab ug_sound_group_multi = new GroupPrefab("Ambient Sound (Selection)", this, string.Empty);
 
-				DropdownListPrefab<int> sound_type_dropdown_multi = new DropdownListPrefab<int>("Sound Type", m_UGController, "UG_AmbientSoundType");
+				UGDropdownListPrefab sound_type_dropdown_multi = new UGDropdownListPrefab("Sound Type", m_UGController, "UG_AmbientSoundType");
 				array<string> soundOptionsMulti = new array<string>();
 				array<int> soundValuesMulti = new array<int>();
 				UGTriggerValidator.GetAmbientSoundTypeOptions(soundOptionsMulti, soundValuesMulti);
@@ -225,10 +225,10 @@ modded class EditorObjectPropertiesDialog : EditorDialogBase
 
 			GroupPrefab bc_group = new GroupPrefab("Breadcrumb Properties (Selection)", this, string.Empty);
 			bc_group.Insert(new EditBoxNumberPrefab("Eye Accommodation", m_BCController, "BC_EyeAccommodation", 0.01, 0.0, 1.0));
-			DropdownListPrefab<int> bc_raycast = new DropdownListPrefab<int>("Use Raycast", m_BCController, "BC_UseRaycast");
+			UGDropdownListPrefab bc_raycast = new UGDropdownListPrefab("Use Raycast", m_BCController, "BC_UseRaycast");
 			bc_raycast["No"] = 0; bc_raycast["Yes"] = 1; bc_group.Insert(bc_raycast);
 			bc_group.Insert(new EditBoxNumberPrefab("Radius", m_BCController, "BC_Radius", 0.1, -1.0, 10000.0));
-			DropdownListPrefab<int> bc_lightlerp_multi = new DropdownListPrefab<int>("Light Lerp", m_BCController, "BC_LightLerp");
+			UGDropdownListPrefab bc_lightlerp_multi = new UGDropdownListPrefab("Light Lerp", m_BCController, "BC_LightLerp");
 			bc_lightlerp_multi["False"] = 0;
 			bc_lightlerp_multi["True"] = 1;
 			bc_group.Insert(bc_lightlerp_multi);
