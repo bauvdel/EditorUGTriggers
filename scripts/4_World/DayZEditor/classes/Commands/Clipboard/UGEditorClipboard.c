@@ -18,6 +18,8 @@ class UGObjectClip
 	int    BC_UseRaycast = 0;
 	float  BC_Radius = -1.0;
 	bool   BC_LightLerp = false;
+	ref UGTriggerMeta    Meta;
+	ref UGBreadcrumbMeta BC_Meta;
 };
 
 class UGClipboard
@@ -66,6 +68,7 @@ class UGClipboard
 				clip.UseLinePointFade = ug.GetUseLinePointFade();
 				clip.AmbientSoundType = ug.GetAmbientSoundType();
 				clip.AmbientSoundSet  = ug.GetAmbientSoundSet();
+				clip.Meta             = ug.GetMeta();
 				s_Buffer.Insert(clip);
 				continue;
 			}
@@ -77,6 +80,7 @@ class UGClipboard
 				clip.BC_UseRaycast       = bc.GetUseRaycast();
 				clip.BC_Radius           = bc.GetRadius();
 				clip.BC_LightLerp        = bc.GetLightLerp();
+				clip.BC_Meta             = bc.GetMeta();
 				s_Buffer.Insert(clip);
 				continue;
 			}
@@ -277,6 +281,7 @@ class UGClipboard
 			ug.SetUseLinePointFade(clip.UseLinePointFade);
 			ug.SetAmbientSoundType(clip.AmbientSoundType);
 			ug.SetAmbientSoundSet(clip.AmbientSoundSet);
+			ug.SetMeta(clip.Meta);
 			return;
 		}
 
@@ -286,6 +291,7 @@ class UGClipboard
 			bc.SetUseRaycast(clip.BC_UseRaycast);
 			bc.SetRadius(clip.BC_Radius);
 			bc.SetLightLerp(clip.BC_LightLerp);
+			bc.SetMeta(clip.BC_Meta);
 			UG_RescanTriggersAround(worldPos, 200.0);
 			return;
 		}

@@ -8,6 +8,9 @@ class UGBreadcrumb : Building
     protected vector    m_LastPos;
     protected float m_NativeRadius;
 
+    // Pass-through vanilla fields (Comment, ExternalValueController)
+    protected ref UGBreadcrumbMeta m_UG_Meta = new UGBreadcrumbMeta();
+
     private static ref array<UGBreadcrumb> s_AllBreadcrumbs = new array<UGBreadcrumb>();
 
     static array<UGBreadcrumb> GetAll() { return s_AllBreadcrumbs; }
@@ -92,6 +95,23 @@ class UGBreadcrumb : Building
         UG_RescanTriggersAround(GetPosition(), 200.0);
     }
     bool GetLightLerp() { return m_UG_LightLerp; }
+
+    // Returns a copy, so callers (clipboard/undo) can't mutate live data
+    UGBreadcrumbMeta GetMeta() { return m_UG_Meta.Copy(); }
+
+    void SetMeta(UGBreadcrumbMeta meta)
+    {
+        if (meta)
+            m_UG_Meta = meta.Copy();
+        else
+            m_UG_Meta = new UGBreadcrumbMeta();
+        UG_RescanTriggersAround(GetPosition(), 200.0);
+    }
+
+    void ApplyMetaTo(JsonUndergroundAreaBreadcrumb b)
+    {
+        m_UG_Meta.ApplyTo(b);
+    }
 
     float GetNativeRadius() { return m_NativeRadius; }
 };

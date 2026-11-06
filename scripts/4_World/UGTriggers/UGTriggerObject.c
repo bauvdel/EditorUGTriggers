@@ -12,7 +12,10 @@ class UGTriggerObject : Building
 	protected bool m_UseLinePointFade = false;
 	protected string m_AmbientSoundType = "";
 	protected string m_AmbientSoundSet = "";
-	
+
+	// Pass-through vanilla fields (Comment, CustomSpawn, Tag, ParentNetworkId)
+	protected ref UGTriggerMeta m_Meta = new UGTriggerMeta();
+
 	// ----- Type (0=Outer, 1=Inner, 2=Transitional) -----
 	int GetUGType()
 	{
@@ -192,6 +195,27 @@ class UGTriggerObject : Building
 		return m_AmbientSoundSet;
 	}
 
+	// Returns a copy, so callers (clipboard/undo) can't mutate live data
+	UGTriggerMeta GetMeta()
+	{
+		return m_Meta.Copy();
+	}
+
+	void SetMeta(UGTriggerMeta meta)
+	{
+		if (meta)
+			m_Meta = meta.Copy();
+		else
+			m_Meta = new UGTriggerMeta();
+
+		UndergroundTrigger trig = GetLinkedTrigger();
+		if (trig)
+		{
+			EnsureDataInitialized(trig);
+			m_Meta.ApplyTo(trig.m_Data);
+		}
+	}
+
 	void UGTriggerObject()
 	{
 		m_UndergroundTrigger = null;
@@ -327,6 +351,7 @@ class UGTriggerObject : Building
 		m_UseLinePointFade = m_UndergroundTrigger.m_Data.UseLinePointFade;
 		m_AmbientSoundType = m_UndergroundTrigger.m_Data.AmbientSoundType;
 		m_AmbientSoundSet = m_UndergroundTrigger.m_Data.AmbientSoundSet;
+		m_Meta.ReadFrom(m_UndergroundTrigger.m_Data);
 		UGTriggerErrorHandler.LogInfo("System", string.Format("Loaded from m_Data - UseLinePointFade:%1, SoundType:'%2', SoundSet:'%3'", m_UseLinePointFade, m_AmbientSoundType, m_AmbientSoundSet));
 	}
 
@@ -380,6 +405,7 @@ class UGTriggerObject : Building
 			bc.UseRaycast = crumb.GetUseRaycast();
 			bc.Radius    = crumb.GetRadius();
 			bc.LightLerp = crumb.GetLightLerp();
+			crumb.ApplyMetaTo(bc); // Comment / ExternalValueController
 
 			crumbs.Insert(bc);
 		}
@@ -434,6 +460,7 @@ class UGTriggerObject : Building
 			bc.UseRaycast = crumb.GetUseRaycast();
 			bc.Radius    = crumb.GetRadius();
 			bc.LightLerp = crumb.GetLightLerp();
+			crumb.ApplyMetaTo(bc); // Comment / ExternalValueController
 
 			crumbs.Insert(bc);
 		}
@@ -529,6 +556,7 @@ class UGTriggerObject : Building
 		trig.m_Data.UseLinePointFade = m_UseLinePointFade;
 		trig.m_Data.AmbientSoundType = m_AmbientSoundType;
 		trig.m_Data.AmbientSoundSet = m_AmbientSoundSet;
+		m_Meta.ApplyTo(trig.m_Data);
 	}
 
 	protected void ApplySizeTransform()
@@ -576,6 +604,7 @@ class UGTriggerApplyRec
     bool   UseLinePointFade;
     string AmbientSoundType;
     string AmbientSoundSet;
+    ref UGTriggerMeta Meta;
 }
 
 class UGBreadcrumbApplyRec
@@ -585,6 +614,7 @@ class UGBreadcrumbApplyRec
     int    UseRaycast;
     float  Radius;
     bool   LightLerp;
+    ref UGBreadcrumbMeta Meta;
 }
 
 ref array<ref UGTriggerApplyRec>     g_UG_ToApply = new array<ref UGTriggerApplyRec>();
@@ -616,6 +646,7 @@ class UG_PostImportApplier
             ug.SetUseLinePointFade(rec.UseLinePointFade);
             ug.SetAmbientSoundType(rec.AmbientSoundType);
             ug.SetAmbientSoundSet(rec.AmbientSoundSet);
+            ug.SetMeta(rec.Meta);
 
             if (rec.Type == 2) ug.QueueCrumbRescan();
 
@@ -632,6 +663,7 @@ class UG_PostImportApplier
             obj.SetUseRaycast(bc.UseRaycast);
             obj.SetRadius(bc.Radius);
             obj.SetLightLerp(bc.LightLerp);
+            obj.SetMeta(bc.Meta);
 
             g_BC_ToApply.Remove(j);
         }
