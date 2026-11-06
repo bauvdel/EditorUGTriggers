@@ -19,14 +19,6 @@ modded class EditorObjectDragHandler
         return v * c + kxv * s + k_unit * (kdv * (1.0 - c));
     }
 
-    protected float UG_ComputeRoll(vector right_unit, vector up_unit, vector fwd_unit)
-    {
-        vector refRight = (vector.Up * fwd_unit).Normalized();
-        float s = vector.Dot(fwd_unit, Math3D.CrossProduct(refRight, right_unit));
-        float c = vector.Dot(refRight, right_unit);
-        return Math.Atan2(s, c);
-    }
-
     protected void UG_FixDuringDrag(EditorObject eo)
     {
         if (!eo) return;
