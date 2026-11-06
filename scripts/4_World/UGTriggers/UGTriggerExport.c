@@ -1,5 +1,10 @@
 class UGTriggersExport
 {
+	// Declared first to match vanilla cfgundergroundtriggers.json key order
+	string           Comment;
+	bool             CustomSpawn;
+	string           Tag;
+	ref TIntArray    ParentNetworkId;
 	ref array<float> Position;
 	ref array<float> Orientation;
 	ref array<float> Size;
@@ -31,6 +36,25 @@ class UGTriggersExport
 		AmbientSoundType   = "";
 		AmbientSoundSet    = "";
 	}
+
+	void SetMeta(UGTriggerMeta meta)
+	{
+		if (!meta) return;
+		Comment         = meta.Comment;
+		CustomSpawn     = meta.CustomSpawn;
+		Tag             = meta.Tag;
+		ParentNetworkId = UG_CopyIntArray(meta.ParentNetworkId);
+	}
+
+	UGTriggerMeta GetMeta()
+	{
+		UGTriggerMeta meta = new UGTriggerMeta();
+		meta.Comment         = Comment;
+		meta.CustomSpawn     = CustomSpawn;
+		meta.Tag             = Tag;
+		meta.ParentNetworkId = UG_CopyIntArray(ParentNetworkId);
+		return meta;
+	}
 }
 
 class UGBreadcrumbExport
@@ -40,6 +64,16 @@ class UGBreadcrumbExport
 	bool  UseRaycast;
 	float Radius;
 	bool  LightLerp;
+	string Comment;
+	ref BreadcrumbExternalValueController ExternalValueController;
+
+	UGBreadcrumbMeta GetMeta()
+	{
+		UGBreadcrumbMeta meta = new UGBreadcrumbMeta();
+		meta.Comment = Comment;
+		meta.ExternalValueController = UG_CopyEVC(ExternalValueController);
+		return meta;
+	}
 }
 class UGTriggersExportRoot
 {
@@ -91,6 +125,9 @@ static JsonUndergroundAreaTriggerData BuildJsonFromUG(UGTriggerObject ug)
     d.UseLinePointFade = ug.GetUseLinePointFade();
     d.AmbientSoundType = ug.GetAmbientSoundType();
     d.AmbientSoundSet = ug.GetAmbientSoundSet();
+
+    // Comment / CustomSpawn / Tag / ParentNetworkId
+    ug.GetMeta().ApplyTo(d);
 
     return d;
 }

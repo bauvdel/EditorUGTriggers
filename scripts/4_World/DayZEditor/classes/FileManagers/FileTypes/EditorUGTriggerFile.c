@@ -93,6 +93,7 @@ class EditorUGTriggerFile : EditorFileType
             triggerExport.UseLinePointFade = ug.GetUseLinePointFade();
             triggerExport.AmbientSoundType = ug.GetAmbientSoundType();
             triggerExport.AmbientSoundSet = ug.GetAmbientSoundSet();
+            triggerExport.SetMeta(ug.GetMeta());
         }
 
         return triggerExport;
@@ -127,6 +128,8 @@ class EditorUGTriggerFile : EditorFileType
         eb.UseRaycast = b.UseRaycast;
         eb.Radius = b.Radius;
         eb.LightLerp = b.LightLerp;
+        eb.Comment = b.Comment;
+        eb.ExternalValueController = UG_CopyEVC(b.ExternalValueController);
         return eb;
     }
 
@@ -188,6 +191,7 @@ class EditorUGTriggerFile : EditorFileType
             arec.UseLinePointFade = t.UseLinePointFade;
             arec.AmbientSoundType = t.AmbientSoundType;
             arec.AmbientSoundSet = t.AmbientSoundSet;
+            arec.Meta = t.GetMeta();
             g_UG_ToApply.Insert(arec);
 
             EditorObjectData dta = EditorObjectData.Create("UGTriggerObject", pos, orient, 1.0, EFE_DEFAULT);
@@ -207,6 +211,7 @@ class EditorUGTriggerFile : EditorFileType
                     bcrec.UseRaycast = be.UseRaycast;
                     bcrec.Radius     = be.Radius;
                     bcrec.LightLerp  = be.LightLerp;
+                    bcrec.Meta       = be.GetMeta();
                     g_BC_ToApply.Insert(bcrec);
 
                     EditorObjectData bcDta = EditorObjectData.Create("UGBreadcrumb", bpos, borient, 1.0, EFE_DEFAULT);

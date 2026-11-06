@@ -1,13 +1,16 @@
 modded class EditorObject
 {
-    //Remove Bounding box for UGTriggerObject
-    override void ShowBoundingBox()
+    // Remove bounding box for UGTriggerObject.
+    // DayZ Editor (1.30 update) replaced ShowBoundingBox() with
+    // SetBoundingBoxVisibility(bool): the box is now drawn every frame in
+    // OnFrame() while m_BoundingBoxVisible is true. Forcing it off here keeps
+    // trigger volumes free of the editor's box on select/show.
+    override void SetBoundingBoxVisibility(bool state)
     {
-        Object w = GetWorldObject();
-        if (UGTriggerObject.Cast(w))
+        if (state && UGTriggerObject.Cast(GetWorldObject()))
         {
-            return;
+            state = false;
         }
-        super.ShowBoundingBox();
+        super.SetBoundingBoxVisibility(state);
     }
 }
