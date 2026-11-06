@@ -18,6 +18,9 @@ class UGPropSnapshot
 	int    BC_Ray;
 	float  BC_Rad;
 	bool   BC_LightLerp;
+	// Pass-through vanilla fields
+	ref UGTriggerMeta    Meta;
+	ref UGBreadcrumbMeta BC_Meta;
 
 	float  ExpireAt;
 }
@@ -46,6 +49,7 @@ class UGUndoCache
 			s.UseLinePointFade = ug.GetUseLinePointFade();
 			s.AmbientSoundType = ug.GetAmbientSoundType();
 			s.AmbientSoundSet  = ug.GetAmbientSoundSet();
+			s.Meta   = ug.GetMeta();
 			s.IsBC   = 0;
 			s.ExpireAt = UGEditorGameCache.GetCachedTime() + ttl;
 			s_Snaps.Insert(s);
@@ -64,6 +68,7 @@ class UGUndoCache
 			s2.BC_Ray = bc.GetUseRaycast();
 			s2.BC_Rad = bc.GetRadius();
 			s2.BC_LightLerp = bc.GetLightLerp();
+			s2.BC_Meta = bc.GetMeta();
 			s2.ExpireAt = UGEditorGameCache.GetCachedTime() + ttl;
 			s_Snaps.Insert(s2);
 		}
@@ -101,6 +106,7 @@ class UGUndoCache
 				ug.SetUseLinePointFade(s.UseLinePointFade);
 				ug.SetAmbientSoundType(s.AmbientSoundType);
 				ug.SetAmbientSoundSet(s.AmbientSoundSet);
+				ug.SetMeta(s.Meta);
 				s_Snaps.Remove(j);
 				continue;
 			}
@@ -111,6 +117,7 @@ class UGUndoCache
 				bc.SetUseRaycast(s.BC_Ray);
 				bc.SetRadius(s.BC_Rad);
 				bc.SetLightLerp(s.BC_LightLerp);
+				bc.SetMeta(s.BC_Meta);
 				UG_RescanTriggersAround(s.Pos, UGTriggerSettings.GetBreadcrumbScanRadius());
 				s_Snaps.Remove(j);
 				continue;
